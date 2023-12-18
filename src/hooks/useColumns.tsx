@@ -4,36 +4,20 @@ import IconButton from '@mui/material/IconButton';
 import StarIcon from '@mui/icons-material/Star';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
+import { baseColumns } from "../shared/Presets";
 
 import { LegislationsService } from "../services";
+import { BillItem, onFavouriteChangeCallbackType } from "../shared/types";
 
-export const useColumns = (): GridColDef[] => {
+export const useColumns = ( onFavouriteChangeCallback:  onFavouriteChangeCallbackType): GridColDef[] => {
 
-    const [ favourites, setFavourites ] = useState<string[]>([]); // get favourites from servers to populate it
     const [ inTransition, setInTransition ] = useState<string[]>([]);
 
-	const toggleFavourite = useCallback((billNumber: string) => { // TODO: bind it
-		if (favourites.includes(billNumber)) {
-			const fvIndex = favourites.indexOf(billNumber);
-			if (fvIndex >= 0) {
-                setInTransition([...inTransition, billNumber]);
-                LegislationsService.setIsFavourite(billNumber, false).then(r => {
-                    setFavourites([...r.favourites]);
-                }).finally(() => {
-                    inTransition.splice(inTransition.indexOf(billNumber), 1);
-                    setInTransition([...inTransition]);
-                });
-			}
-		} else {
-            setInTransition([...inTransition, billNumber]);
-            LegislationsService.setIsFavourite(billNumber, true).then(r => {
-                setFavourites([...r.favourites]);
-            }).finally(() => {
-                inTransition.splice(inTransition.indexOf(billNumber), 1);
-                setInTransition([...inTransition]);
-            });
-		}
-	}, [inTransition, favourites, setInTransition, setFavourites]);
+	const toggleFavourite = useCallback((bill: BillItem) => { // TODO: bind it
+		LegislationsService.setIsFavourite(bill.billNumber, !bill.isFavourite).then((r => {
+            onFavouriteChangeCallback(bill.billNumber, !bill.isFavourite);
+        }));
+	}, [ onFavouriteChangeCallback ]);
 
     return [
         {
@@ -43,45 +27,28 @@ export const useColumns = (): GridColDef[] => {
         type: "actions", 
         getActions: (params: GridRowParams) => {
             const billNo = params.row.billNumber;
-            const isInFavourites = favourites.includes(billNo) ;
             const isInTransition = inTransition.includes(billNo);
+
+            const bill = params.row;
            
-            return [ // TODO: do tooltip
-                    <Tooltip title={isInFavourites ? "Unfavourite" : "Make favourite"}>
+            return [ 
+                    <Tooltip title={ bill.isFavourite? "Unfavourite" : "Make favourite"}>
                         <IconButton  
                             disabled={isInTransition}
-                            onClick={() => toggleFavourite(billNo)}>
+                            onClick={() => toggleFavourite(bill)}>
                             <CircularProgress
                                     size={isInTransition? 30: 0}
                                     sx={{
-                                    color: isInFavourites ? "gray": "green",
+                                    color: bill.isFavourite ? "gray": "green",
                                     position: 'absolute',
                                     zIndex: 1,
                                 }}
                             />
-                            <StarIcon color={isInFavourites ? "success": "action"}/>
+                            <StarIcon color={bill.isFavourite ? "success": "action"}/>
                         </IconButton>
                     </Tooltip>
                 ]
         }},
-        { field: "billNumber", headerName: "Bill No", flex: 1,  width: 200 },
-        {
-            field: 'billType',
-            headerName: 'Type',
-            width: 200,
-            flex: 2
-        },
-        {
-            field: 'billStatus',
-            headerName: 'Status',
-            width: 200,
-            flex: 2
-        },
-        {
-            field: 'billSponsors',
-            headerName: 'Sponsors', 
-            width: 500,
-            flex: 10,
-        }
+       ...baseColumns
   ]
 }

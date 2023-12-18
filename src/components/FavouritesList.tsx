@@ -6,16 +6,9 @@ import { deserialiseBills } from "../shared/util";
 import { BillItem, SelectedRow } from "../shared/types";
 import Box from '@mui/material/Box';
 import SimpleDialog from "../components/Dialog";
-import { useColumns } from "../hooks/useColumns";
-import { Types as ServiceTypes } from "../services";
+import { baseColumns } from "../shared/Presets";
 
-
-interface ListProps {
-    ItemsService: (params?: ServiceTypes.LegislationQueryParams) =>  Promise<any>;
-}
-
-
-function List(props: ListProps) {
+function FavouritesList() {
 
 	// state
 	const [ items, setItems ] = useState<BillItem[]>([]);
@@ -23,22 +16,13 @@ function List(props: ListProps) {
 	const [ error, setError ] = useState<string | undefined>(undefined);
 	const [ selectedRow, setSelectedRow ] = useState<SelectedRow | undefined>(undefined);
 
-	const onFavouriteChange = (billNumber: string, favouriteStatus: boolean) => {
-        const changedBill = items.find(bl => bl.billNumber === billNumber);
-        if (changedBill) {
-            changedBill.isFavourite = favouriteStatus;
-            setItems([...items]);
-        }
-    }
-
 
 	// hooks
-	const columns = useColumns(onFavouriteChange);
 	
 	useEffect(() => {
 		async function load() {
 			try {
-				const data: any = await props.ItemsService();
+				const data: any = await LegislationsService.getFavouriteLegislations();
 				setItems(deserialiseBills(data.results));
 			} catch(e: any) {
 				setError(e?.message ?? "Unexpected Error while getting legislations.")
@@ -64,10 +48,10 @@ function List(props: ListProps) {
 							background: "#e9e9ea"
 						}
 					}}
-					columns={columns}
+					columns={baseColumns}
 					rows={items}
 					loading={isLoading}
-					onRowClick={(params: GridRowParams, event: MuiEvent, details: GridCallbackDetails ) => {
+					onRowClick={(params: GridRowParams) => {
 						const { billNumber, titleEn, titleGa} = params.row;
 						setSelectedRow({
 							billNumber, titleEn, titleGa
@@ -86,4 +70,4 @@ function List(props: ListProps) {
 	);
 }
 
-export default List;
+export default FavouritesList;

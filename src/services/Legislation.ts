@@ -8,8 +8,8 @@ axios.defaults.baseURL = "http://localhost:3000";
 // handles ignores cancellation error
 
 interface FakeResponse {
-    responseCode: number;
-    favourites: string[];
+    billNo: string;
+    isFavourite: boolean;  // could we set undefined here to indicate transition ?
 }
 
 const data = {
@@ -20909,6 +20909,7 @@ const LegislationsService = {
 		return axios
 			.get(`/legislation`, {
 				params,
+                withCredentials: false
 			})
 			.then(result => {
 				console.log("API response ", result);
@@ -20945,10 +20946,10 @@ const LegislationsServiceFake = {
                     favourites.push(billId);
                 }
 				resolve({
-                    responseCode: 200,
-                    favourites
+                    billNo: billId,
+                    isFavourite: favourite
                 });
-			}, 5000);
+			}, 500);
 		})
 		return p;
     },
@@ -20958,9 +20959,8 @@ const LegislationsServiceFake = {
                 const modifiedData = cloneDeep(data);
                 const results = modifiedData.results.filter((r: any) => favourites.includes(r.bill.billNo));
                 modifiedData.results = results;
-                console.log("Favourites are ", favourites);
-				resolve(modifiedData);
-			}, 5000);
+           	resolve(modifiedData);
+			}, 500);
 		})
 		return p;
 	},

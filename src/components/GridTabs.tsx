@@ -3,9 +3,10 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { SelectedRow } from "../shared/types";
-import List from "./List";
+//import List from "./List";
 import { LegislationsService } from '../services';
+import FavouritesList from './FavouritesList';
+import FullList from './FullList';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -28,7 +29,7 @@ function CustomTabPanel(props: TabPanelProps) {
     >
       {tabNumber === index && (
         <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
+          {children}
         </Box>
       )}
     </div>
@@ -53,19 +54,27 @@ export const AppTabsContent = () => {
   // { label, content}
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={tabNumber} onChange={handleChange} aria-label="bill details tabs">
-          <Tab label="All" {...idProps(0)} />
-          <Tab label="Favourites" {...idProps(1)} />
-        </Tabs>
+    <Box className="App"
+			sx={{
+				width: "80vw",
+				height: "80vh",
+			}}
+		>
+      <h1>Bills</h1>
+      <Box sx={{ width: '100%' }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={tabNumber} onChange={handleChange} aria-label="bill details tabs">
+            <Tab label="All" {...idProps(0)} />
+            <Tab label="Favourites" {...idProps(1)} />
+          </Tabs>
+        </Box>
+        <CustomTabPanel tabNumber={tabNumber} index={0}>
+          <FullList/>
+        </CustomTabPanel>
+        <CustomTabPanel tabNumber={tabNumber} index={1}>
+          <FavouritesList/>
+        </CustomTabPanel>
       </Box>
-      <CustomTabPanel tabNumber={tabNumber} index={0}>
-        <List ItemsService={LegislationsService.getLegislations}/>
-      </CustomTabPanel>
-      <CustomTabPanel tabNumber={tabNumber} index={1}>
-        <List ItemsService={LegislationsService.getFavouriteLegislations}/>
-      </CustomTabPanel>
     </Box>
   );
 }

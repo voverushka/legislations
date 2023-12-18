@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import "../App.css";
 import { DataGrid, MuiEvent, GridRowParams, GridCallbackDetails } from '@mui/x-data-grid';
 import LegislationsService  from "../../src/services/Legislation";
@@ -7,15 +7,8 @@ import { BillItem, SelectedRow } from "../shared/types";
 import Box from '@mui/material/Box';
 import SimpleDialog from "../components/Dialog";
 import { useColumns } from "../hooks/useColumns";
-import { Types as ServiceTypes } from "../services";
 
-
-interface ListProps {
-    ItemsService: (params?: ServiceTypes.LegislationQueryParams) =>  Promise<any>;
-}
-
-
-function List(props: ListProps) {
+function FullList() {
 
 	// state
 	const [ items, setItems ] = useState<BillItem[]>([]);
@@ -23,22 +16,22 @@ function List(props: ListProps) {
 	const [ error, setError ] = useState<string | undefined>(undefined);
 	const [ selectedRow, setSelectedRow ] = useState<SelectedRow | undefined>(undefined);
 
-	const onFavouriteChange = (billNumber: string, favouriteStatus: boolean) => {
-        const changedBill = items.find(bl => bl.billNumber === billNumber);
-        if (changedBill) {
-            changedBill.isFavourite = favouriteStatus;
+    const onFavouriteChange = useCallback((billNumber: string, favouriteStatus: boolean) => {
+        const changedBillIndex = items.findIndex(bl => bl.billNumber === billNumber);
+        if (changedBillIndex >= 0) {
+            items[changedBillIndex].isFavourite = favouriteStatus;
             setItems([...items]);
         }
-    }
+    }, [items, setItems]);
 
 
 	// hooks
-	const columns = useColumns(onFavouriteChange);
+	const columns = useColumns( onFavouriteChange);
 	
 	useEffect(() => {
 		async function load() {
 			try {
-				const data: any = await props.ItemsService();
+				const data: any = await LegislationsService.getLegislations();
 				setItems(deserialiseBills(data.results));
 			} catch(e: any) {
 				setError(e?.message ?? "Unexpected Error while getting legislations.")
@@ -67,7 +60,7 @@ function List(props: ListProps) {
 					columns={columns}
 					rows={items}
 					loading={isLoading}
-					onRowClick={(params: GridRowParams, event: MuiEvent, details: GridCallbackDetails ) => {
+					onRowClick={(params: GridRowParams) => {
 						const { billNumber, titleEn, titleGa} = params.row;
 						setSelectedRow({
 							billNumber, titleEn, titleGa
@@ -86,4 +79,4 @@ function List(props: ListProps) {
 	);
 }
 
-export default List;
+export default FullList;

@@ -6,7 +6,9 @@ export interface BillItem {
     billSponsors: string;
     titleEn: string,
     titleGa: string;
-    isFavourite?: boolean;
+    isFavourite: boolean;
 }
 
 export type SelectedRow = Pick<BillItem, "billNumber" | "titleEn" | "titleGa">;
+
+export type onFavouriteChangeCallbackType = (billNo: string, isFavourite: boolean) => void;

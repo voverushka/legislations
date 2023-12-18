@@ -24,6 +24,5 @@ export const deserialiseBills = (data: any[]): BillItem[] => {
         })
         return acc;
     }, []);
-    console.log("Items are ", items);
     return items;
 }
