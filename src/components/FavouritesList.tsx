@@ -49,8 +49,19 @@ function FavouritesList() {
 						}
 					}}
 					columns={baseColumns}
+                    filterMode="client"
+                    onFilterModelChange={() => {
+                        console.log("Filter changed");
+                    }}
+                    paginationMode="client"
+                    onPaginationModelChange={() => {
+                        console.log("Pagination happens");
+                    }}
 					rows={items}
 					loading={isLoading}
+                    initialState={{
+                        pagination: { paginationModel: { pageSize: 25 } },
+                    }}
 					onRowClick={(params: GridRowParams) => {
 						const { billNumber, titleEn, titleGa} = params.row;
 						setSelectedRow({

@@ -5,8 +5,8 @@ export const deserialiseBills = (data: any[]): BillItem[] => {
     const items = data.reduce<BillItem[]>((acc, currentBill, index) => {
         const current = currentBill.bill;
         acc.push({
-            id: index, //`${index}-${current.billNo}`, 
-            billNumber: current.billNo,
+            id: `${index}-${current.billNo}`, 
+            billNumber: current.billNo, // TODO: this looks not uique, might be problem setting favourites
             billType: current.billType,
             billStatus: current.status,
             billSponsors: current.sponsors.reduce((sp: any[], currentSp: any) => {

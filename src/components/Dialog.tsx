@@ -31,7 +31,11 @@ const SimpleDialog = (props: SimpleDialogProps) => {
   };
 
   return (
-    <Dialog onClose={handleClose} open={open}>
+    <Dialog 
+      onClose={handleClose} 
+      open={open}  
+      fullWidth
+      maxWidth="sm">
       <DialogTitle>Title of Bill <strong>{`${billNumber}`}</strong></DialogTitle>
       <DialogContent>
           <Content {...selectedRow} />

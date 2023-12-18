@@ -1,5 +1,5 @@
 export interface BillItem {
-    id: number,
+    id: string,
     billNumber: string;
     billType: string;
     billStatus: string;

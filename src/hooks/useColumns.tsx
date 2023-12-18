@@ -14,41 +14,46 @@ export const useColumns = ( onFavouriteChangeCallback:  onFavouriteChangeCallbac
     const [ inTransition, setInTransition ] = useState<string[]>([]);
 
 	const toggleFavourite = useCallback((bill: BillItem) => { // TODO: bind it
-		LegislationsService.setIsFavourite(bill.billNumber, !bill.isFavourite).then((r => {
+  		LegislationsService.setIsFavourite(bill.billNumber, !bill.isFavourite).then(r => {
             onFavouriteChangeCallback(bill.billNumber, !bill.isFavourite);
-        }));
+        });
 	}, [ onFavouriteChangeCallback ]);
 
     return [
         {
-        field: "isFavourite", 
-        headerName: "Favorite", 
-        flex: 1, 
-        type: "actions", 
-        getActions: (params: GridRowParams) => {
+            field: "isFavourite", 
+            headerName: "Favorite", 
+            flex: 1, 
+            type: "actions", 
+            getActions: (params: GridRowParams) => {
             const billNo = params.row.billNumber;
             const isInTransition = inTransition.includes(billNo);
 
             const bill = params.row;
            
             return [ 
-                    <Tooltip title={ bill.isFavourite? "Unfavourite" : "Make favourite"}>
-                        <IconButton  
-                            disabled={isInTransition}
-                            onClick={() => toggleFavourite(bill)}>
-                            <CircularProgress
-                                    size={isInTransition? 30: 0}
-                                    sx={{
-                                    color: bill.isFavourite ? "gray": "green",
-                                    position: 'absolute',
-                                    zIndex: 1,
-                                }}
-                            />
-                            <StarIcon color={bill.isFavourite ? "success": "action"}/>
-                        </IconButton>
-                    </Tooltip>
-                ]
-        }},
-       ...baseColumns
+                <Tooltip title={ bill.isFavourite? "Unfavourite" : "Make favourite"}>
+                    <IconButton  
+                        disabled={isInTransition}
+                        onClick={() => {
+                            if (!inTransition.includes(bill.billNumber)) {
+                                toggleFavourite(bill);
+                            }
+                        }}>
+                        <CircularProgress
+                                size={isInTransition? 30: 0}
+                                sx={{
+                                color: bill.isFavourite ? "gray": "green",
+                                position: 'absolute',
+                                zIndex: 1,
+                            }}
+                        />
+                        <StarIcon color={bill.isFavourite ? "success": "action"}/>
+                    </IconButton>
+                </Tooltip>
+            ]
+        }
+    },
+    ...baseColumns
   ]
 }
