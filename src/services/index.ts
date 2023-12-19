@@ -1,5 +1,5 @@
 import LegislationsService from "./Legislation";
-import * as Types from "./Legislation.types";
+import * as Types from "./Types";
 
 export {
     LegislationsService,

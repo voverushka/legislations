@@ -15,3 +15,12 @@ export interface LegislationQueryParams {
 	act_no?: string;
 	lang?: string;
 }
+
+export interface CancellableRequestReturnType {
+	promise: Promise<any>;
+	cancel: () => void;
+	isFullfilled: boolean;
+}
+
+export type CancellableRequestType = (params: any) => CancellableRequestReturnType;
+

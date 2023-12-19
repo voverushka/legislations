@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import "../App.css";
 import { DataGrid, GridFilterModel, GridRowParams, GridPaginationModel } from '@mui/x-data-grid';
 import LegislationsService  from "../../src/services/Legislation";
@@ -10,26 +10,18 @@ import { useColumns } from "../hooks/useColumns";
 import { Types as servicesTypes} from "../services";
 import { DEFAULT_PAGE_SIZE, initialQuery } from "../shared/Presets";
 import isEqual from "lodash.isequal";
-import { LegislationQueryParams } from "../services/Legislation.types";
+import { LegislationQueryParams } from "../services/Types";
+import { CancellableRequestReturnType, CancellableRequestType } from "../services/Types";
+import CancellableRequest  from "../services/CancellableRequest";
 
 function FullList() {
 
 	const queryParamsRef = useRef<LegislationQueryParams | undefined>(undefined);
 
-	async function load() {
-		try {
-			const data: any = await LegislationsService.getLegislations(queryParams);
-			setItemsCount(data.head.counts.billCount);
-			setItems(deserialiseBills(data.results));
-		} catch(e: any) {
-			setError(e?.message ?? "Unexpected Error while getting legislations.")
-		} finally {
-			setLoading(false);
-		}
-	}
-	
 	// state
+	
 	const [ queryParams, setQueryParams] = useState<servicesTypes.LegislationQueryParams>(initialQuery);
+	const [ currentListRequest, setCurrentListRequest ] = useState<CancellableRequestReturnType | undefined>(undefined);
 	
 	const [ items, setItems ] = useState<BillItem[]>([]);
     const [ itemsCount, setItemsCount ] = useState<number>(0);
@@ -37,6 +29,21 @@ function FullList() {
 	const [ error, setError ] = useState<string | undefined>(undefined);
 	const [ selectedRow, setSelectedRow ] = useState<SelectedRow | undefined>(undefined);
 
+	const loadList = useCallback( async (qParams: LegislationQueryParams) => {
+		setLoading(true);
+		try {
+			const r = CancellableRequest(qParams);
+			setCurrentListRequest(r);
+			const data: any = (await r.promise).data;
+			setItemsCount(data.head.counts.billCount);
+			setItems(deserialiseBills(data.results));
+		} catch(e: any) {
+			setError(e?.message ?? "Unexpected Error while getting legislations.")
+		} finally {
+			setLoading(false);
+		}
+	}, [setLoading,  setError,  setItemsCount, setItems, currentListRequest ]);
+	
     const onFavouriteChange = useCallback((billNumber: string, favouriteStatus: boolean) => {
         const changedBillIndex = items.findIndex(bl => bl.billNumber === billNumber);
         if (changedBillIndex >= 0) {
@@ -48,10 +55,12 @@ function FullList() {
 	useEffect(() => {
 		if (!isEqual(queryParamsRef.current, queryParams)) {
 			queryParamsRef.current = queryParams;
-			setLoading(true);
-			load();
+			if (!currentListRequest?.isFullfilled) {
+				currentListRequest?.cancel();
+			}
+			loadList(queryParams);
 		}
-	}, [ queryParams ])
+	}, [ queryParams, currentListRequest , setCurrentListRequest, loadList ]);
 
 	// hooks
 	const columns = useColumns( onFavouriteChange);
@@ -64,7 +73,7 @@ function FullList() {
 				bill_status: [ currentFilter ]
 			});
 		}
-    }, []);
+    }, [ setQueryParams, queryParams]);
 
     const onPaginationChage = useCallback((paginationModel: GridPaginationModel) => {
         setQueryParams({
@@ -72,7 +81,7 @@ function FullList() {
 			skip: paginationModel.page * paginationModel.pageSize,
 			limit: paginationModel.pageSize
 		});
-    }, []);
+    }, [ setQueryParams, queryParams ]);
 
 	return (
 		<>

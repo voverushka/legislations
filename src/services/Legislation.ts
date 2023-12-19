@@ -1,8 +1,6 @@
 import axios from "axios";
-import type { LegislationQueryParams } from "./Legislation.types";
+import type { LegislationQueryParams } from "./Types";
 import cloneDeep from "lodash.clonedeep";
-
-// axios.defaults.baseURL = "https://localhost:3000";
 
 // TODO: maybe to have interceptor which adds base url and
 // handles ignores cancellation error
@@ -20909,7 +20907,7 @@ const LegislationsService = {
 		return axios
 			.get(`/legislation`, {
 				params,
-                withCredentials: false
+    
 			})
 			.then(result => {
 				console.log("API response ", result);
