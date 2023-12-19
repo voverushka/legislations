@@ -1,0 +1,6 @@
+# Ignore artifacts:
+coverage
+dist
+node_modules
+src/api-client/generated
+yarn.lock

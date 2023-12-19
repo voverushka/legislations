@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import "../App.css";
-import { DataGrid, GridFilterModel, GridRowParams, GridCallbackDetails, GridPaginationModel } from '@mui/x-data-grid';
+import { DataGrid, GridFilterModel, GridRowParams, GridPaginationModel } from '@mui/x-data-grid';
 import LegislationsService  from "../../src/services/Legislation";
 import { deserialiseBills } from "../shared/util";
 import { BillItem, SelectedRow } from "../shared/types";
@@ -8,12 +8,15 @@ import Box from '@mui/material/Box';
 import SimpleDialog from "../components/Dialog";
 import { useColumns } from "../hooks/useColumns";
 import { Types as servicesTypes} from "../services";
-import { DEFAULT_PAGE_SIZE } from "../shared/Presets";
+import { DEFAULT_PAGE_SIZE, initialQuery } from "../shared/Presets";
+import isEqual from "lodash.isequal";
+import { LegislationQueryParams } from "../services/Legislation.types";
 
 function FullList() {
 
+	const queryParamsRef = useRef<LegislationQueryParams | undefined>(undefined);
+
 	async function load() {
-		console.log("Loading ");
 		try {
 			const data: any = await LegislationsService.getLegislations(queryParams);
 			setItemsCount(data.head.counts.billCount);
@@ -26,10 +29,8 @@ function FullList() {
 	}
 	
 	// state
-	const [ queryParams, setQueryParams] = useState<servicesTypes.LegislationQueryParams>({
-		skip: 0,
-		limit: DEFAULT_PAGE_SIZE
-	});
+	const [ queryParams, setQueryParams] = useState<servicesTypes.LegislationQueryParams>(initialQuery);
+	
 	const [ items, setItems ] = useState<BillItem[]>([]);
     const [ itemsCount, setItemsCount ] = useState<number>(0);
 	const [ isLoading, setLoading ] = useState<boolean>(false);
@@ -45,9 +46,11 @@ function FullList() {
     }, [items, setItems]);
 
 	useEffect(() => {
-		// TODO: request cancellation here !!
-		setLoading(true);
-		load();
+		if (!isEqual(queryParamsRef.current, queryParams)) {
+			queryParamsRef.current = queryParams;
+			setLoading(true);
+			load();
+		}
 	}, [ queryParams ])
 
 	// hooks
@@ -58,7 +61,7 @@ function FullList() {
 		if (currentFilter !== undefined) {
 			setQueryParams({
 				...queryParams,
-				"bill_status": currentFilter
+				bill_status: [ currentFilter ]
 			});
 		}
     }, []);
@@ -99,6 +102,7 @@ function FullList() {
                     onFilterModelChange={onFilterChange}
                     paginationMode="server"
                     onPaginationModelChange={onPaginationChage}
+					pageSizeOptions={[10, 25, 50]}
                 	onRowClick={(params: GridRowParams) => {
 						const { billNumber, titleEn, titleGa} = params.row;
 						setSelectedRow({

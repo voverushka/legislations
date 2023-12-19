@@ -38,3 +38,8 @@ export const fieldNameFilterMap = {
 }
 
 export const DEFAULT_PAGE_SIZE = 25;
+
+export const initialQuery = { 
+    skip: 0,
+    limit: DEFAULT_PAGE_SIZE
+}

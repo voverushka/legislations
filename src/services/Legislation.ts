@@ -2,7 +2,7 @@ import axios from "axios";
 import type { LegislationQueryParams } from "./Legislation.types";
 import cloneDeep from "lodash.clonedeep";
 
-axios.defaults.baseURL = "http://localhost:3000";
+// axios.defaults.baseURL = "https://localhost:3000";
 
 // TODO: maybe to have interceptor which adds base url and
 // handles ignores cancellation error
@@ -20925,16 +20925,33 @@ const LegislationsService = {
 
 const LegislationsServiceFake = {
 	getLegislations: (params?: LegislationQueryParams): Promise<any> => {
-		const p = new Promise((resolve) => {
-			setTimeout(() => {
-                const modifiedData = cloneDeep(data);
-                modifiedData.results.forEach(r => {
+        return axios
+			.get(`/legislation`, {
+				params,
+                withCredentials: false
+			})
+			.then(response => {
+                const data = response.data;
+                data.results.forEach(r => {
                     r.bill.isFavourite = favourites.includes(r.bill.billNo);
                 });
-            	resolve(modifiedData);
-			}, 5000);
-		})
-		return p;
+            	return data;
+			}).catch(e => {
+				if (!axios.isCancel) {
+					throw e;
+				} // just ignore error otherwise
+			});
+        
+		// const p = new Promise((resolve) => {
+		// 	setTimeout(() => {
+        //         const modifiedData = cloneDeep(data);
+        //         modifiedData.results.forEach(r => {
+        //             r.bill.isFavourite = favourites.includes(r.bill.billNo);
+        //         });
+        //     	resolve(modifiedData);
+		// 	}, 5000);
+		// })
+		// return p;
 	},
     setIsFavourite: (billId: string, favourite: boolean): Promise<FakeResponse> => {
         const p = new Promise<FakeResponse>((resolve, reject) => {
@@ -20967,3 +20984,76 @@ const LegislationsServiceFake = {
 };
 
 export default LegislationsServiceFake;
+
+
+// parallel calls. Our requests based on initial count we got
+// if count does change in between, we are not aware here
+export const getAllInParallelRequests = async () => {
+	const maxPageSize = 50;
+	return LegislationsService.getLegislations({}).then(
+		(response: any) => {
+			if (response.count <= response.items.length) {
+				// should be == but just in case adding >
+				return response;
+			}
+			const additionaRequests: Promise<any>[] = [];
+
+			// issue parallel requests for remaining items
+			for (
+				let i = response.items.length;
+				i < response.count;
+				i += maxPageSize
+			) {
+				additionaRequests.push(
+					LegislationsService.getLegislations({
+						limit: maxPageSize,
+						skip: i,
+					})
+				);
+			}
+
+			return Promise.all(additionaRequests).then(additionaRequestsResponses => {
+				for (let i = 0; i < additionaRequestsResponses.length; i++) {
+					response.items = [
+						...response.items,
+						...(additionaRequestsResponses[i].items ?? []),
+					];
+				}
+				return response;
+			});
+		}
+	);
+};
+
+// sequential calls. This one will be more precise if counts updates, but more slow
+// in this API initial startIndex is 0, sp we do not need to add 1 for start indexes
+export const getAllInstanceGroupsSequence = async () => {
+	const maxPageSize = 50; // go on max page size
+
+	return LegislationsService.getLegislations({}).then(
+		async (response: any) => {
+			if (response.items.length >= response.count) {
+				//should be == but just in case putting >
+				return response; // we are OK, not a lot of instance groups
+			}
+			let additionaRespStart = response.items.length;
+			let inError = false;
+
+			while (!inError && additionaRespStart < response.count) {
+				try {
+					const data = await LegislationsService.getLegislations({
+						limit: maxPageSize,
+						skip: additionaRespStart,
+					});
+					additionaRespStart += maxPageSize; // we assumimg we got all what we wanted
+					//response.count = data.count;
+					// response.items = [...response.items, ...(data.items ?? [])];
+				} catch (e) {
+					inError = true; // prevent infinite looping in case of error
+					throw e;
+				}
+			}
+			return response;
+		}
+	);
+};
