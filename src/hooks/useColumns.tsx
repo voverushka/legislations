@@ -6,7 +6,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
 import { baseColumns } from "../shared/Presets";
 
-import { LegislationsService } from "../services";
+import { LegislationsService } from "../api-client";
 import { BillItem, onFavouriteChangeCallbackType } from "../shared/types";
 
 export const useColumns = ( onFavouriteChangeCallback:  onFavouriteChangeCallbackType): GridColDef[] => {
@@ -14,8 +14,8 @@ export const useColumns = ( onFavouriteChangeCallback:  onFavouriteChangeCallbac
     const [ inTransition, setInTransition ] = useState<string[]>([]);
 
 	const toggleFavourite = useCallback((bill: BillItem) => { // TODO: bind it
-  		LegislationsService.setIsFavourite(bill.billNumber, !bill.isFavourite).then(r => {
-            onFavouriteChangeCallback(bill.billNumber, !bill.isFavourite);
+  		LegislationsService.changeFavouriteStatus(bill.id, !bill.isFavourite).then(r => {
+            onFavouriteChangeCallback(bill.id, !bill.isFavourite);
         });
 	}, [ onFavouriteChangeCallback ]);
 
@@ -26,8 +26,8 @@ export const useColumns = ( onFavouriteChangeCallback:  onFavouriteChangeCallbac
             flex: 1, 
             type: "actions", 
             getActions: (params: GridRowParams) => {
-            const billNo = params.row.billNumber;
-            const isInTransition = inTransition.includes(billNo);
+            const billId = params.row.id;
+            const isInTransition = inTransition.includes(billId);
 
             const bill = params.row;
            
@@ -36,7 +36,7 @@ export const useColumns = ( onFavouriteChangeCallback:  onFavouriteChangeCallbac
                     <IconButton  
                         disabled={isInTransition}
                         onClick={() => {
-                            if (!inTransition.includes(bill.billNumber)) {
+                            if (!inTransition.includes(bill.id)) {
                                 toggleFavourite(bill);
                             }
                         }}>

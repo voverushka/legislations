@@ -9,6 +9,11 @@ export interface BillItem {
     isFavourite: boolean;
 }
 
+export interface ClientResponse {
+    count: number,
+    items: BillItem[]
+}
+
 export type SelectedRow = Pick<BillItem, "billNumber" | "titleEn" | "titleGa">;
 
 export type onFavouriteChangeCallbackType = (billNo: string, isFavourite: boolean) => void;

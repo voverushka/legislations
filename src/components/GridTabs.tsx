@@ -4,7 +4,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 //import List from "./List";
-import { LegislationsService } from '../services';
+import { LegislationsService } from '../api-client';
 import FavouritesList from './FavouritesList';
 import FullList from './FullList';
 

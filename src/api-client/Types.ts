@@ -14,6 +14,8 @@ export interface LegislationQueryParams {
 	act_year?: string;
 	act_no?: string;
 	lang?: string;
+	// not supported by server yet
+	bill_type?: string;
 }
 
 export interface CancellableRequestReturnType {

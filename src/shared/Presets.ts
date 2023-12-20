@@ -11,7 +11,6 @@ export const baseColumns: GridColDef[] = [
     {
         field: 'billType',
         headerName: 'Type',
-        filterable: false,
         sortable: false,
         width: 200,
         flex: 2
@@ -19,6 +18,7 @@ export const baseColumns: GridColDef[] = [
     {
         field: 'billStatus',
         headerName: 'Status',
+        filterable: false,
         sortable: false,
         width: 200,
         flex: 2
