@@ -43,3 +43,13 @@ export const initialQuery = {
     skip: 0,
     limit: DEFAULT_PAGE_SIZE
 }
+export const DataGridStyles = {
+    "& .MuiDataGrid-columnHeaders": {
+        background: "#e9e9ea"
+    },
+    "& .MuiDataGrid-cell: focus, & .MuiDataGrid-cell: focus-within": {
+        outline: "none"
+    },
+    "width": "80vw",
+	"height": "80vh"
+};

@@ -1,34 +1,25 @@
-import React, { useCallback, useEffect, useState, useRef, useMemo } from "react";
-import "../App.css";
-import { DataGrid, GridFilterModel, GridRowParams, GridPaginationModel } from '@mui/x-data-grid';
-import LegislationsService  from "../../src/api-client/Legislation";
-import { BillItem, SelectedRow } from "../shared/types";
-import Box from '@mui/material/Box';
-import SimpleDialog from "../components/Dialog";
-import { useColumns } from "../hooks/useColumns";
-import { Types as servicesTypes} from "../api-client";
-import { DEFAULT_PAGE_SIZE, initialQuery } from "../shared/Presets";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import isEqual from "lodash.isequal";
-import { LegislationQueryParams } from "../api-client/Types";
-import { CancellableRequestReturnType } from "../api-client/Types";
-import { ClientResponse } from "../shared/types";
-
+import Box from '@mui/material/Box';
+import { DataGrid } from '@mui/x-data-grid';
+import "../App.css";
+import LegislationsService  from "../../src/api-client/Legislation";
+import { BillItem, ClientResponse } from "../shared/types";
+import { useFavouritesColumn } from "../hooks/useFavouritesColumn";
+import { LegislationQueryParams, CancellableRequestReturnType } from "../api-client/Types";
+import { baseColumns, DataGridStyles } from "../shared/Presets";
+import { useQueryParams, useRowClickHandler } from "../hooks";
 
 function FullList() {
 
 	const queryParamsRef = useRef<LegislationQueryParams | undefined>(undefined);
 
-	// state
-	
 	// TODO: use reducer
-	const [ queryParams, setQueryParams] = useState<servicesTypes.LegislationQueryParams>(initialQuery);
 	const [ currentListRequest, setCurrentListRequest ] = useState<CancellableRequestReturnType | undefined>(undefined);
-	
 	const [ items, setItems ] = useState<BillItem[]>([]);
     const [ itemsCount, setItemsCount ] = useState<number>(0);
 	const [ isLoading, setLoading ] = useState<boolean>(false);
 	const [ error, setError ] = useState<string | undefined>(undefined);
-	const [ selectedRow, setSelectedRow ] = useState<SelectedRow | undefined>(undefined);
 
 	// functions
 	const loadList = useCallback( async (qParams: LegislationQueryParams) => {
@@ -55,24 +46,10 @@ function FullList() {
         }
     }, [items, setItems]);
 
-	const onFilterChange = useCallback((filterModel: GridFilterModel) => {
-		const currentFilterStr = filterModel.items?.[0]?.value;
-		if (currentFilterStr !== undefined) {
-			setQueryParams({
-				// once filter changes, pagination goes back to default
-				bill_type: currentFilterStr
-			});
-		}
-    }, [ setQueryParams, queryParams]);
-
-    const onPaginationChage = useCallback((paginationModel: GridPaginationModel) => {
-        setQueryParams({
-			...queryParams,
-			skip: paginationModel.page * paginationModel.pageSize,
-			limit: paginationModel.pageSize
-		});
-    }, [ setQueryParams, queryParams ]);
-
+	// hooks
+	const { dataGridMixin, queryParams} = useQueryParams();
+	const { rowHandlerDataGridMixin, RowInfo} = useRowClickHandler();
+	const favouritesColumn = useFavouritesColumn(onFavouriteChange);
 
 	// effects
 	useEffect(() => {
@@ -94,54 +71,24 @@ function FullList() {
 		}
 	}, [ queryParams, currentListRequest , setCurrentListRequest, loadList ]);
 
-	// hooks
-	const columns = useColumns( onFavouriteChange);
-
 	// JSX
 	return (
 		<>
-			<Box className="App"
-				sx={{
-					width: "80vw",
-					height: "80vh",
-				}}
-			>
+			<Box className="App">
 				<DataGrid
-					sx={{
-						"& .MuiDataGrid-columnHeaders": {
-							background: "#e9e9ea"
-						},
-						"& .MuiDataGrid-cell: focus, & .MuiDataGrid-cell: focus-within": {
-							outline: "none"
-						}
-					}}
-					columns={columns}
+					sx={DataGridStyles}
+					columns={[
+						favouritesColumn,
+						...baseColumns
+					]}
                     rowCount={itemsCount}
 					rows={items}
 					loading={isLoading}
-                    initialState={{
-                        pagination: { paginationModel: { pageSize: DEFAULT_PAGE_SIZE } },
-                    }}
-                    filterMode="server"
-                    onFilterModelChange={onFilterChange}
-                    paginationMode="server"
-                    onPaginationModelChange={onPaginationChage}
-					pageSizeOptions={[10, 25, 50]}
-                	onRowClick={(params: GridRowParams) => {
-						const { billNumber, titleEn, titleGa} = params.row;
-						setSelectedRow({
-							billNumber, titleEn, titleGa
-						});
-					}}
-				/>
+               		{...dataGridMixin }
+					{...rowHandlerDataGridMixin}
+          		/>
 			</Box>
-            { selectedRow && <SimpleDialog
-					open={true}
-					selectedRow={selectedRow}
-					onClose={() => {
-						setSelectedRow(undefined);
-					}}
-			 />}
+            { RowInfo }
 		</>
 	);
 }

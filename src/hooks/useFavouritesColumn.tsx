@@ -9,28 +9,25 @@ import { baseColumns } from "../shared/Presets";
 import { LegislationsService } from "../api-client";
 import { BillItem, onFavouriteChangeCallbackType } from "../shared/types";
 
-export const useColumns = ( onFavouriteChangeCallback:  onFavouriteChangeCallbackType): GridColDef[] => {
+export const useFavouritesColumn = ( onFavouriteChangeCallback:  onFavouriteChangeCallbackType): GridColDef => {
 
     const [ inTransition, setInTransition ] = useState<string[]>([]);
 
-	const toggleFavourite = useCallback((bill: BillItem) => { // TODO: bind it
+	const toggleFavourite = useCallback((bill: BillItem) => { 
   		LegislationsService.changeFavouriteStatus(bill.id, !bill.isFavourite).then(r => {
             onFavouriteChangeCallback(bill.id, !bill.isFavourite);
         });
 	}, [ onFavouriteChangeCallback ]);
 
-    return [
-        {
-            field: "isFavourite", 
-            headerName: "Favorite", 
-            flex: 1, 
-            type: "actions", 
-            getActions: (params: GridRowParams) => {
+    const favouritesColumn = {
+        field: "isFavourite", 
+        headerName: "Favorite", 
+        flex: 1, 
+        type: "actions", 
+        getActions: (params: GridRowParams) => {
             const billId = params.row.id;
             const isInTransition = inTransition.includes(billId);
-
             const bill = params.row;
-           
             return [ 
                 <Tooltip title={ bill.isFavourite? "Unfavourite" : "Make favourite"}>
                     <IconButton  
@@ -53,7 +50,8 @@ export const useColumns = ( onFavouriteChangeCallback:  onFavouriteChangeCallbac
                 </Tooltip>
             ]
         }
-    },
-    ...baseColumns
-  ]
+    }
+
+    return favouritesColumn;
 }
+export default useFavouritesColumn;
