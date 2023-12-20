@@ -1,42 +1,44 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef, useReducer } from "react";
 import isEqual from "lodash.isequal";
-import { DataGrid } from '@mui/x-data-grid';
 import Box from '@mui/material/Box';
+import { DataGrid } from '@mui/x-data-grid';
 import "../App.css";
 import LegislationsService  from "../../src/api-client/Legislation";
-import { BillItem, ClientResponse } from "../shared/types";
+import { ClientResponse, LegislationActionTypeEnum, LegislationListState, LegislationListAction, Reducer } from "../shared/types";
 import { LegislationQueryParams, CancellableRequestReturnType } from "../api-client/Types";
-import { baseColumns, DataGridStyles } from "../shared/Presets";
+import { baseColumns, DataGridStyles, initialLegislationsListState } from "../shared/Presets";
 import { useQueryParams, useRowClickHandler } from "../hooks";
+import { legislationsListReducer } from "../shared/legislationsListReducer";
+import Error from "../components/Error";
 
-function FavouritesList() {
+function FavouritesList () {
 
 	const queryParamsRef = useRef<LegislationQueryParams | undefined>(undefined);
 
-	// TODO: use reducer
-	const [ currentListRequest, setCurrentListRequest ] = useState<CancellableRequestReturnType | undefined>(undefined);
-	const [ items, setItems ] = useState<BillItem[]>([]);
-    const [ itemsCount, setItemsCount ] = useState<number>(0);
-	const [ isLoading, setLoading ] = useState<boolean>(false);
-	const [ error, setError ] = useState<string | undefined>(undefined);
+	const [ listState, dispatch] = useReducer<Reducer<LegislationListState, LegislationListAction>, LegislationListState>(
+		legislationsListReducer, initialLegislationsListState, () => initialLegislationsListState);
 
+	const [ currentListRequest, setCurrentListRequest ] = useState<CancellableRequestReturnType | undefined>(undefined);
+	const {  items, itemsCount, loading,  error } = listState;
+	
 	// functions
 	const loadList = useCallback( async (qParams: LegislationQueryParams) => {
-		setLoading(true);
-		setError(undefined);
+		dispatch({ type: LegislationActionTypeEnum.reload })
 		try {
 			const ongoingRequest = LegislationsService.getFavourites(qParams);
 			setCurrentListRequest(ongoingRequest);
 			const data: ClientResponse = (await ongoingRequest.promise).data;
-			setItemsCount(data.count);
-			setItems(data.items);
+			dispatch({ type: LegislationActionTypeEnum.result, payload: {
+				items: data.items,
+				itemsCount: data.count,
+				error: undefined
+			}});
 		} catch(e: any) {
-			setError(e?.message ?? "Unexpected Error while getting legislations.")
-		} finally {
-			setLoading(false);
+			const errorMessage = e?.message ?? "Unexpected Error while getting favourite legislations.";
+			dispatch({type: LegislationActionTypeEnum.result, payload: { error: errorMessage}});
 		}
-	}, [setLoading,  setError,  setItemsCount, setItems ]);
-
+	}, [ dispatch, setCurrentListRequest]);
+	
 	// hooks
 	const { dataGridMixin, queryParams} = useQueryParams();
 	const { rowHandlerDataGridMixin, RowInfo} = useRowClickHandler();
@@ -59,19 +61,20 @@ function FavouritesList() {
 			}
 			loadList(queryParams);
 		}
-	}, [ queryParams, currentListRequest , setCurrentListRequest, loadList ]);
+	}, [ queryParams, currentListRequest, loadList ]);
 
 	// JSX
 	return (
 		<>
 			<Box className="App">
+				{ error && <Error message={error} />}
 				<DataGrid
 					sx={DataGridStyles}
 					columns={baseColumns}
-                    rowCount={itemsCount}
-					rows={items}
-					loading={isLoading}
-               		{...dataGridMixin }
+			        rowCount={itemsCount}
+					rows={items ?? []}
+					loading={loading}
+			   		{...dataGridMixin }
 					{...rowHandlerDataGridMixin}
           		/>
 			</Box>

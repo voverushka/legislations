@@ -10,6 +10,8 @@ const initialQuery = {
     limit: DEFAULT_PAGE_SIZE
 }
 
+const filterDebounceMs = 500;
+
 export const useQueryParams = () => {
 
     const [ queryParams, setQueryParams] = useState<servicesTypes.LegislationQueryParams>(initialQuery);
@@ -44,6 +46,7 @@ export const useQueryParams = () => {
             pageSizeOptions: PAGE_SIZE_OPTIONS
         },
         initialQuery,
+        filterDebounceMs,
         queryParams
     }
 }

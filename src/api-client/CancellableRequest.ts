@@ -6,8 +6,6 @@ const CancellableRequest = (url: string, requestParams: any): CancellableRequest
 
     let fullfilled: boolean = false;
 
-    console.log("Request params ", requestParams);
-
     const p = {  
         signal: controller.signal,
         params: requestParams

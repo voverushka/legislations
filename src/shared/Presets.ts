@@ -1,4 +1,5 @@
 import { GridColDef } from '@mui/x-data-grid';
+import { LegislationListState } from './types';
 
 export const baseColumns: GridColDef[] = [
     { field: "billNumber", 
@@ -53,3 +54,10 @@ export const DataGridStyles = {
     "width": "80vw",
 	"height": "80vh"
 };
+
+export const initialLegislationsListState: LegislationListState = {
+	loading: false,
+	items: [],
+	error: undefined,
+	itemsCount: 0
+}
