@@ -4,7 +4,6 @@ import IconButton from '@mui/material/IconButton';
 import StarIcon from '@mui/icons-material/Star';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
-import { baseColumns } from "../shared/Presets";
 
 import { LegislationsService } from "../api-client";
 import { BillItem, onFavouriteChangeCallbackType } from "../shared/types";

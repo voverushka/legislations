@@ -26,7 +26,7 @@ import {  LegislationActionTypeEnum, LegislationListState, LegislationListAction
           items,
           itemsCount
         };
-        case LegislationActionTypeEnum.general:
+        case LegislationActionTypeEnum.general: //could be default too
           return {
             ...state,
             ...action.payload
