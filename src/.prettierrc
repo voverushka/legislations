@@ -1,6 +1,6 @@
 {
-  useTabs: true,
-  arrowParens: "avoid",
-  importOrder: ["^[^.#]{1}.+$", "^#.+$", "^[.]{2}\/.+$", "^[.]{1}\/.+$"],
-  importOrderSeparation: true,
+  // useTabs: true,
+  // arrowParens: "avoid",
+  // importOrder: ["^[^.#]{1}.+$", "^#.+$", "^[.]{2}\/.+$", "^[.]{1}\/.+$"],
+  // importOrderSeparation: true,
 }

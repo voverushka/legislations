@@ -1,27 +1,31 @@
-import React, { useCallback, useEffect, useState, useRef, useReducer } from "react";
+import { useCallback, useEffect, useState, useRef, useReducer } from "react";
 import isEqual from "lodash.isequal";
 import "../App.css";
 import { ClientResponse, LegislationActionTypeEnum, LegislationListState, LegislationListAction, Reducer } from "../shared/types";
-import { LegislationQueryParams, CancellableRequestReturnType } from "../api-client/Types";
+import { SupportedQueryParams, CancellableRequestReturnType } from "../api-client/Types";
 import { initialLegislationsListState } from "../shared/Presets";
 import { useQueryParams } from "../hooks";
 import { legislationsListReducer } from "../shared/legislationsListReducer";
 
 interface DataProviderParams {
-    dataFn:  (params?: LegislationQueryParams) => CancellableRequestReturnType
+    dataFn:  (params?: SupportedQueryParams) => CancellableRequestReturnType,
+    tabId: string,
 }
+
+const isCancellationError = (e: any) => e instanceof Error && e.cause === "cancelled";
+
 export const useDataProvider = (params: DataProviderParams) => {
 
-    const queryParamsRef = useRef<LegislationQueryParams | undefined>(undefined);
+    const queryParamsRef = useRef<SupportedQueryParams | undefined>(undefined);
     const [ listState, dispatch] = useReducer<Reducer<LegislationListState, LegislationListAction>, LegislationListState>(
 		legislationsListReducer, initialLegislationsListState, () => initialLegislationsListState);
 
 	const [ currentListRequest, setCurrentListRequest ] = useState<CancellableRequestReturnType | undefined>(undefined);
     const { dataGridMixin, queryParams} = useQueryParams();
 	const {  items, itemsCount, loading,  error } = listState;
-	
+ 	
 	// functions
-	const loadList = useCallback( async (qParams: LegislationQueryParams) => {
+	const loadList = useCallback( async (qParams: SupportedQueryParams) => {
 		dispatch({ type: LegislationActionTypeEnum.reload })
 		try {
 			const ongoingRequest = params.dataFn(qParams);
@@ -33,20 +37,21 @@ export const useDataProvider = (params: DataProviderParams) => {
 				error: undefined
 			}});
 		} catch(e: any) {
-			const errorMessage = e?.message ?? "Unexpected Error while getting legislations.";
-			dispatch({type: LegislationActionTypeEnum.result, payload: { error: errorMessage}});
+            if (!isCancellationError(e)) {
+                const errorMessage = e?.message ?? "Unexpected Error while getting legislations.";
+                dispatch({type: LegislationActionTypeEnum.result, payload: { error: errorMessage}});
+            }
 		}
-	}, [ dispatch, setCurrentListRequest]);
+	}, [ dispatch, setCurrentListRequest, params]);
 	
-   	// effects
-	useEffect(() => {
-		return () => {
-			// cancel on unmount
-			if (!currentListRequest?.isFullfilled) {
-				currentListRequest?.cancel();
-			}
-		}
-	}, [ currentListRequest ]);
+    useEffect(() => {
+        // hook unmounts every time parent component re-renders
+       return  () => {
+            if (!currentListRequest?.isFullfilled) {
+                currentListRequest?.cancel();
+            }
+        }
+    }, [currentListRequest ]);
 
 	useEffect(() => {
 		if (!isEqual(queryParamsRef.current, queryParams)) {
@@ -55,7 +60,7 @@ export const useDataProvider = (params: DataProviderParams) => {
 				currentListRequest?.cancel();
 			}
 			loadList(queryParams);
-		}
+   	    }
 	}, [ queryParams, currentListRequest, loadList ]); 
 
     return {

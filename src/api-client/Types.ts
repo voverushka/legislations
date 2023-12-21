@@ -18,6 +18,8 @@ export interface LegislationQueryParams {
 	bill_type?: string;
 }
 
+export type SupportedQueryParams = Pick<LegislationQueryParams, "bill_type" | "skip" | "limit">;
+
 export interface CancellableRequestReturnType {
 	promise: Promise<any>;
 	cancel: () => void;

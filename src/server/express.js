@@ -8,11 +8,13 @@ const favourites = [];
 
 const LEGISLATIONS_URL = 'https://api.oireachtas.ie/v1/legislation';
 
+// filtering workaround: using cache of all records
+let legislationsCache = {};
 
-const toResponse = (data) => {
+const toResponse = (data, filterFn /* takes in result item and returns boolean */) => {
   const items = data.results.reduce((acc, currentBill, index) => {
       const  { uri, billNo, billType, status, sponsors, shortTitleEn, shortTitleGa } = currentBill.bill;
-      acc.push({
+      const resultItem = {
           id: uri,
           billNumber: billNo, // TODO: this looks not uique, might be problem setting favourites
           billType: billType,
@@ -29,63 +31,64 @@ const toResponse = (data) => {
           titleEn: shortTitleEn,
           titleGa: shortTitleGa,
           isFavourite: favourites.includes(uri)
-      })
+      }
+
+      if ((typeof filterFn === "function" && filterFn(resultItem) === true) || !filterFn) {
+          acc.push(resultItem);
+      }
       return acc;
   }, []);
   return {
-    count: data.head.counts.billCount,
+    count: filterFn ? items.length: data.head.counts.billCount,
     items
   }
 }
 
-// parallel calls. Our requests based on initial count we got
-// if count does change in between, we are not aware here
-const getAllInParallelRequests = async () => {
-	const maxPageSize = 50;
-	return axios.get(LEGISLATIONS_URL, {
+const getPage = (query, filterFn) => {
+  const pageResponse = toResponse(legislationsCache.response, filterFn);
+  const lastIndex = query.skip + query.limit;
+  pageResponse.items = pageResponse.items.length > lastIndex ?
+     pageResponse.items.slice(query.skip, lastIndex): pageResponse.items;
+  return pageResponse;
+}
+
+const useCache = (query, filterFn) => {
+  if (!legislationsCache.response) { // adding just in case, filtering should be disabled in this case
+    getAllLegislations().then(response => {
+      legislationsCache.response = response.data;
+      return getPage(query, filterFn);
+    })
+  } else {
+    return getPage(query, filterFn);
+  }
+}
+
+const getAllLegislations = () => {
+  return axios.get(LEGISLATIONS_URL, { // teest call to get total count
     params: {
       skip: 0,
-      limit: maxPageSize
+      limit: 1
     }
-  }).then(
-		(response) => {
-      const r = toResponse(response.data);
-			if (r.count <= r.items.length) {
-				// should be == but just in case adding <
-				return r;
-			}
-			const additionaRequests = [];
-
-			// issue parallel requests for remaining items
-			for (
-				let i = r.items.length;
-				i < r.count;
-				i += maxPageSize
-			) {
-				additionaRequests.push(
-          axios.get(LEGISLATIONS_URL, {
-						limit: maxPageSize,
-						skip: i * maxPageSize,
-					})
-				);
-			}
-
-			return Promise.all(additionaRequests.slice(0, 10)).then(additionaRequestsResponses => {
-      	for (let i = 0; i < additionaRequestsResponses.length; i++) {
-       ;
-					r.items = [
-						...r.items,
-						...(toResponse(additionaRequestsResponses[i].data).items ?? []),
-					];
-				}
-				return r;
-			});
-		}
-	);
+  }).then((testResult) => {
+    return axios.get(LEGISLATIONS_URL, {
+      params: {
+        skip: 0,
+        limit: testResult.data.head.counts.billCount
+      }
+    });
+  });	
 };
 
 
+
 app.use(express.urlencoded({ extended: true }));
+
+app.post('/prefetch', (req, res) => {
+  getAllLegislations().then(response => {
+    legislationsCache.response = response.data;
+    res.send();
+  })
+});
 
 app.get('/legislation', (req, res) => {
   if (!req.query.bill_type) {
@@ -96,45 +99,34 @@ app.get('/legislation', (req, res) => {
           res.send(clientResponse);
       })
    } else { 
-      getAllInParallelRequests().then((data) => {
-        console.log("Data is ", data);
-
-      })
+    const filterFn = item => item.billType.toLowerCase().includes(req.query.bill_type.toLowerCase());
+    res.send(useCache(req.query, filterFn));
    }
 });
 
 // TODO: change to post or put
 app.get('/favourite', (req, res) => {
-  const { billId, isFavourite} = req.query;
-  const favIndex = favourites.indexOf(billId);
+  setTimeout(() => {
+    const { billId, isFavourite} = req.query;
+    const favIndex = favourites.indexOf(billId);
 
-  if (favIndex >= 0 && isFavourite == "false") {
-      favourites.splice(favIndex, 1);
-  } else if (favIndex < 0 && isFavourite == "true") {
-      favourites.push(billId);
-  }
-
-  // TODO: handle error
-  res.send({
-      billNo: billId,
-      isFavourite
-  });
+    if (favIndex >= 0 && isFavourite == "false") {
+        favourites.splice(favIndex, 1);
+    } else if (favIndex < 0 && isFavourite == "true") {
+        favourites.push(billId);
+    }
+    console.info(`Request to mark ${billId} as  ${isFavourite === "true" ? "favourite": "unfavourite"} done`);
+    res.send({
+        billNo: billId,
+        isFavourite: isFavourite === "true" ?  true: false
+    });
+  },  500);
 
 });
 
-
-// if I have favourites in array, I know what bill no I need to filter by
 app.get('/favourites', (req, res) => {
-
-  axios.get(LEGISLATIONS_URL, {
-    params: req.query
-  }).then(response => {
-        const clientResponse = toResponse(response.data);
-        clientResponse.items = clientResponse.items.filter(it => it.isFavourite === true);
-        clientResponse.count = favourites.length;
-        res.send(clientResponse);
-    })
-
+  const result = useCache(req.query, item => favourites.includes(item.id));
+  res.send(result);
 });
 
 app.listen(port, () => {

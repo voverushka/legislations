@@ -4,9 +4,10 @@ import { DataGrid } from '@mui/x-data-grid';
 import "../App.css";
 import { LegislationActionTypeEnum } from "../shared/types";
 import { useFavouritesColumn } from "../hooks/useFavouritesColumn";
-import { baseColumns, DataGridStyles } from "../shared/Presets";
-import { useRowClickHandler, useDataProvider } from "../hooks";
+import { DataGridStyles } from "../shared/Presets";
+import { useRowClickHandler, useDataProvider, useBaseColumns } from "../hooks";
 import { LegislationsService } from "../api-client";
+import Error from "../components/Error";
 
 
 function FullList() {
@@ -15,7 +16,8 @@ function FullList() {
 		itemsCount, 
 		error, loading, dispatch,
 		 queryParamsDataGridMixin} = useDataProvider( {
-			dataFn: LegislationsService.getLegislations 
+			dataFn: LegislationsService.getLegislations,
+			tabId: "all-bills"
 		 });
 	
     const onFavouriteChange = useCallback((billId: string, favouriteStatus: boolean) => {
@@ -31,12 +33,13 @@ function FullList() {
 	// hooks
 	const { rowHandlerDataGridMixin, RowInfo} = useRowClickHandler();
 	const favouritesColumn = useFavouritesColumn(onFavouriteChange);
+	const baseColumns = useBaseColumns();
 	
 	// JSX
 	return (
 		<>
 			<Box className="App">
-				{/* { error && <Error message={error} />} */}
+				{ error && <Error message={error} />}
 				<DataGrid
 					sx={DataGridStyles}
 					columns={[

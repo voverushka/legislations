@@ -1,23 +1,23 @@
-import React, { useCallback } from "react";
+import React from "react";
 import Box from '@mui/material/Box';
 import { DataGrid } from '@mui/x-data-grid';
 import "../App.css";
-import { baseColumns, DataGridStyles } from "../shared/Presets";
-import { useRowClickHandler, useDataProvider } from "../hooks";
+import { DataGridStyles } from "../shared/Presets";
+import { useRowClickHandler, useDataProvider, useBaseColumns } from "../hooks";
 import { LegislationsService } from "../api-client";
-
-
 function FullList() {
 
 	const { items, 
 		itemsCount, error, 
 		loading, 
 		queryParamsDataGridMixin} = useDataProvider({
-			dataFn: LegislationsService.getLegislations 
+			dataFn: LegislationsService.getFavourites,
+			tabId: `fav-bills`
 		});
 	
 	// hooks
 	const { rowHandlerDataGridMixin, RowInfo} = useRowClickHandler();
+	const baseColumns = useBaseColumns();
 	
 	// JSX
 	return (

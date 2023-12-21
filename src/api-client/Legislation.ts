@@ -1,5 +1,4 @@
 import type { LegislationQueryParams } from "./Types";
-import cloneDeep from "lodash.clonedeep";
 import CancellableRequest from "./CancellableRequest";
 import { CancellableRequestReturnType } from "./Types";
 import axios from "axios";
@@ -12,7 +11,7 @@ interface FavouriteResponse {
     isFavourite: boolean;  // could we set undefined here to indicate transition ?
 }
 
-const LegislationsServiceFake = {
+const LegislationsService = {
 	getLegislations: (params?: LegislationQueryParams): CancellableRequestReturnType => {
         return CancellableRequest("/legislation", params ?? {});
     },
@@ -23,46 +22,14 @@ const LegislationsServiceFake = {
                 billId,
                 isFavourite
             }
-        });
+        }).then((r: any) =>  r.data);
     },
 
     getFavourites: (params?: LegislationQueryParams): CancellableRequestReturnType => {
         return CancellableRequest("/favourites", params ?? {});
-    }
+    },
+
+    prefetch: () => axios.post("/prefetch")
 };
 
-export default LegislationsServiceFake;
-
-
-// sequential calls. This one will be more precise if counts updates, but more slow
-// in this API initial startIndex is 0, sp we do not need to add 1 for start indexes
-// export const getAllInstanceGroupsSequence = async () => {
-// 	const maxPageSize = 50; // go on max page size
-
-// 	return LegislationsService.getLegislations({}).then(
-// 		async (response: any) => {
-// 			if (response.items.length >= response.count) {
-// 				//should be == but just in case putting >
-// 				return response; // we are OK, not a lot of instance groups
-// 			}
-// 			let additionaRespStart = response.items.length;
-// 			let inError = false;
-
-// 			while (!inError && additionaRespStart < response.count) {
-// 				try {
-// 					const data = await LegislationsService.getLegislations({
-// 						limit: maxPageSize,
-// 						skip: additionaRespStart,
-// 					});
-// 					additionaRespStart += maxPageSize; // we assumimg we got all what we wanted
-// 					//response.count = data.count;
-// 					// response.items = [...response.items, ...(data.items ?? [])];
-// 				} catch (e) {
-// 					inError = true; // prevent infinite looping in case of error
-// 					throw e;
-// 				}
-// 			}
-// 			return response;
-// 		}
-// 	);
-// };
+export default LegislationsService;

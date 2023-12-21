@@ -13,10 +13,15 @@ export const useFavouritesColumn = ( onFavouriteChangeCallback:  onFavouriteChan
     const [ inTransition, setInTransition ] = useState<string[]>([]);
 
 	const toggleFavourite = useCallback((bill: BillItem) => { 
-  		LegislationsService.changeFavouriteStatus(bill.id, !bill.isFavourite).then(r => {
-            onFavouriteChangeCallback(bill.id, !bill.isFavourite);
+        setInTransition([...inTransition, bill.id]);
+  		LegislationsService.changeFavouriteStatus(bill.id, !bill.isFavourite).then(resp => {
+            onFavouriteChangeCallback(resp.billNo, resp.isFavourite);
+            // TODO: this part needs investigation
+            const ind = inTransition.indexOf(resp.billNo);
+            inTransition.splice(ind, 1);
+            setInTransition([...inTransition]);        
         });
-	}, [ onFavouriteChangeCallback ]);
+	}, [ onFavouriteChangeCallback, setInTransition, inTransition ]);
 
     const favouritesColumn = {
         field: "isFavourite", 
@@ -28,11 +33,11 @@ export const useFavouritesColumn = ( onFavouriteChangeCallback:  onFavouriteChan
             const isInTransition = inTransition.includes(billId);
             const bill = params.row;
             return [ 
-                <Tooltip title={ bill.isFavourite? "Unfavourite" : "Make favourite"}>
+                <Tooltip title={ isInTransition? "Processing..." : bill.isFavourite ? "Unfavourite" : "Make favourite"}>
                     <IconButton  
-                        disabled={isInTransition}
                         onClick={() => {
                             if (!inTransition.includes(bill.id)) {
+                                setInTransition([...inTransition, bill.id]);
                                 toggleFavourite(bill);
                             }
                         }}>
