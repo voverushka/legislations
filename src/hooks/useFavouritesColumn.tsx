@@ -25,7 +25,7 @@ export const useFavouritesColumn = ( onFavouriteChangeCallback:  onFavouriteChan
 
     const favouritesColumn = {
         field: "isFavourite", 
-        headerName: "Favorite", 
+        headerName: "Favourite", 
         flex: 1, 
         type: "actions", 
         getActions: (params: GridRowParams) => {

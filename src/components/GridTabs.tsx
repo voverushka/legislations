@@ -72,7 +72,8 @@ export const AppTabsContent = () => {
   return (
     <Stack>
       <Stack>
-        <h1 style={{ textAlign: "center", paddingTop: "15px"}}>Bills</h1>
+        <h1 data-testid="header" 
+          style={{ textAlign: "center", paddingTop: "15px"}}>Bills</h1>
         { infoMessage && <h4 style={{  textAlign: "center", color: "green"}}>{infoMessage}</h4>}
       </Stack>
       <Box sx={{ width: '100%' }}>

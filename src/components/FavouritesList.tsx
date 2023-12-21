@@ -5,11 +5,13 @@ import "../App.css";
 import { DataGridStyles } from "../shared/Presets";
 import { useRowClickHandler, useDataProvider, useBaseColumns } from "../hooks";
 import { LegislationsService } from "../api-client";
-function FullList() {
+import Error from "../components/Error";
 
+function FullList() {
 	const { items, 
-		itemsCount, error, 
+		itemsCount, 
 		loading, 
+		error,
 		queryParamsDataGridMixin} = useDataProvider({
 			dataFn: LegislationsService.getFavourites,
 			tabId: `fav-bills`
@@ -23,7 +25,7 @@ function FullList() {
 	return (
 		<>
 			<Box className="App">
-				{/* { error && <Error message={error} />} */}
+				{ error && <Error message={error} />}
 				<DataGrid
 					sx={DataGridStyles}
 					columns={baseColumns}
