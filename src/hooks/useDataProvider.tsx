@@ -55,7 +55,6 @@ export const useDataProvider = (params: DataProviderParams): DaraProviderReturn 
 	}, [ dispatch, setCurrentListRequest, params]);
 	
     useEffect(() => {
-        // hook unmounts every time parent component re-renders
        return  () => {
             if (!currentListRequest?.isFullfilled) {
                 currentListRequest?.cancel();
@@ -64,8 +63,8 @@ export const useDataProvider = (params: DataProviderParams): DaraProviderReturn 
     }, [currentListRequest ]);
 
 	useEffect(() => {
-		if (!isEqual(queryParamsRef.current, queryParams)) {
-			queryParamsRef.current = queryParams;
+      	if (!isEqual(queryParamsRef.current, queryParams)) {
+         	queryParamsRef.current = {...queryParams};
 			if (!currentListRequest?.isFullfilled) {
 				currentListRequest?.cancel();
 			}
