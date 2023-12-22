@@ -9,11 +9,18 @@ import { useQueryParams } from "../hooks";
 import { legislationsListReducer } from "../shared/legislationsListReducer";
 
 interface DataProviderParams {
-    dataFn:  (params?: SupportedQueryParams) => CancellableRequestReturnType,
-    tabId: string,
+    dataFn:  (params?: SupportedQueryParams) => CancellableRequestReturnType;
+    tabId: string;
 }
 
-export const useDataProvider = (params: DataProviderParams) => {
+interface DaraProviderReturn {
+    listState: LegislationListState;
+    queryParamsDataGridMixin: any;  // TODO: type
+    onExternalListStateChange: (newState: LegislationListState) => void;
+}
+
+export const useDataProvider = (params: DataProviderParams): DaraProviderReturn => {
+
 
     const queryParamsRef = useRef<SupportedQueryParams | undefined>(undefined);
     const [ listState, dispatch] = useReducer<Reducer<LegislationListState, LegislationListAction>, LegislationListState>(
@@ -21,9 +28,12 @@ export const useDataProvider = (params: DataProviderParams) => {
 
 	const [ currentListRequest, setCurrentListRequest ] = useState<CancellableRequestReturnType | undefined>(undefined);
     const { dataGridMixin, queryParams} = useQueryParams();
-	const {  items, itemsCount, loading,  error } = listState;
  	
 	// functions
+    const onExternalListStateChange = useCallback((newState: LegislationListState) => {
+        dispatch({type: LegislationActionTypeEnum.general, payload: newState})
+    }, [ dispatch]);
+
 	const loadList = useCallback( async (qParams: SupportedQueryParams) => {
 		dispatch({ type: LegislationActionTypeEnum.reload })
 		try {
@@ -64,12 +74,9 @@ export const useDataProvider = (params: DataProviderParams) => {
 	}, [ queryParams, currentListRequest, loadList ]); 
 
     return {
-        items, 
-        itemsCount, 
-        loading,  
-        error, 
-        dispatch,
-        queryParamsDataGridMixin: dataGridMixin
+        listState,
+        queryParamsDataGridMixin: dataGridMixin,
+        onExternalListStateChange
     }
 }
 

@@ -8,14 +8,12 @@ import { LegislationsService } from "../api-client";
 import Error from "../components/Error";
 
 function FullList() {
-	const { items, 
-		itemsCount, 
-		loading, 
-		error,
-		queryParamsDataGridMixin} = useDataProvider({
+	const { listState, queryParamsDataGridMixin} = useDataProvider({
 			dataFn: LegislationsService.getFavourites,
 			tabId: `fav-bills`
 		});
+	
+	const { items, itemsCount, loading, error } = listState;
 	
 	// hooks
 	const { rowHandlerDataGridMixin, RowInfo} = useRowClickHandler();
