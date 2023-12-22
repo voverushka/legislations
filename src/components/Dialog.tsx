@@ -19,7 +19,7 @@ const RowInfoDialog = (props: RowInfoDialogProps) => {
   
   const handleClose = React.useCallback(() => {
      onClose();
-  }, []);
+  }, [ onClose ]);
 
   return (
     <Dialog 

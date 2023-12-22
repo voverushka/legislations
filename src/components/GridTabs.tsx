@@ -75,7 +75,7 @@ export const AppTabsContent = () => {
       <Stack>
         <h1 data-testid="header" 
           style={{ textAlign: "center", paddingTop: "15px"}}>Bills</h1>
-          <AppInfo message={infoMessage}/>
+        <AppInfo message={infoMessage}/>
       </Stack>
       <Box sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

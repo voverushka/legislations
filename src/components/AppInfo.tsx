@@ -1,4 +1,4 @@
-import {  Stack, CircularProgress } from "@mui/material";
+import { Stack } from "@mui/material";
 import InfoIcon from '@mui/icons-material/Info';
 
 interface Props {
