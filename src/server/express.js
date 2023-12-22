@@ -48,9 +48,9 @@ const toResponse = (data, filterFn /* takes in result item and returns boolean *
 
 const getPage = (query, filterFn) => {
   const pageResponse = toResponse(legislationsCache.response, filterFn);
-  const lastIndex = query.skip + query.limit;
+  const lastIndex = +query.skip + +query.limit;
   pageResponse.items = pageResponse.items.length > lastIndex ?
-     pageResponse.items.slice(query.skip, lastIndex): pageResponse.items;
+     pageResponse.items.slice(+query.skip, lastIndex): pageResponse.items;
   return pageResponse;
 }
 
@@ -77,7 +77,7 @@ const getAllLegislations = () => {
         skip: 0,
         limit: testResult.data.head.counts.billCount
       }
-    });
+    })
   });	
 };
 
