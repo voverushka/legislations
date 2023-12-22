@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const cors = require('cors');
 const app = express();
 const port = 8080;
 
@@ -11,6 +12,7 @@ const LEGISLATIONS_URL = 'https://api.oireachtas.ie/v1/legislation';
 // filtering workaround: using cache of all records
 let legislationsCache = {};
 
+// helpers
 const toResponse = (data, filterFn /* takes in result item and returns boolean */) => {
   const items = data.results.reduce((acc, currentBill, index) => {
       const  { uri, billNo, billType, status, sponsors, shortTitleEn, shortTitleGa } = currentBill.bill;
@@ -79,9 +81,11 @@ const getAllLegislations = () => {
   });	
 };
 
-
-
+// server
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ extended: true }));
+
+app.use(cors());
 
 app.post('/prefetch', (req, res) => {
   getAllLegislations().then(response => {
@@ -104,21 +108,20 @@ app.get('/legislation', (req, res) => {
    }
 });
 
-// TODO: change to post or put
-app.get('/favourite', (req, res) => {
+app.post('/favourite', (req, res) => {
   setTimeout(() => {
-    const { billId, isFavourite} = req.query;
+    const { billId, isFavourite} = req.body;
     const favIndex = favourites.indexOf(billId);
 
-    if (favIndex >= 0 && isFavourite == "false") {
+    if (favIndex >= 0 && isFavourite === false) {
         favourites.splice(favIndex, 1);
-    } else if (favIndex < 0 && isFavourite == "true") {
+    } else if (favIndex < 0 && isFavourite === true) {
         favourites.push(billId);
     }
-    console.info(`Request to mark ${billId} as  ${isFavourite === "true" ? "favourite": "unfavourite"} done`);
+    console.info(`Request to mark ${billId} as  ${isFavourite === true ? "favourite": "unfavourite"} done`);
     res.send({
         billNo: billId,
-        isFavourite: isFavourite === "true" ?  true: false
+        isFavourite
     });
   },  500);
 

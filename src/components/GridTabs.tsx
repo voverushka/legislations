@@ -4,6 +4,7 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import FavouritesList from './FavouritesList';
+import AppInfo from "./AppInfo";
 import FullList from './FullList';
 import { LegislationsService } from '../api-client';
 import { useAppSelector, useAppDispatch } from '../appStore/hooks';
@@ -67,14 +68,14 @@ export const AppTabsContent = () => {
       }).catch(e => {
         dispatch(setInfo("Filtering could not be enabled."))
       });
-  }, []);
+  }, [ dispatch ]);
 
   return (
     <Stack>
       <Stack>
         <h1 data-testid="header" 
           style={{ textAlign: "center", paddingTop: "15px"}}>Bills</h1>
-        { infoMessage && <h4 style={{  textAlign: "center", color: "green"}}>{infoMessage}</h4>}
+          <AppInfo message={infoMessage}/>
       </Stack>
       <Box sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

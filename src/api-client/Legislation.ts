@@ -17,12 +17,20 @@ const LegislationsService = {
     },
 
     changeFavouriteStatus: (billId: string, isFavourite: boolean): Promise<FavouriteResponse> => {
-        return axios.get("/favourite", { // TODO: should be post
-            params: {
+        const options = {
+            method: 'POST',
+            url: '/favourite',
+            headers: {
+                'content-type': 'application/json',
+            },
+            data: JSON.stringify({
                 billId,
                 isFavourite
-            }
-        }).then((r: any) =>  r.data);
+            })
+        };
+        return axios.request(options)
+            .then((r: any) =>  r.data)
+
     },
 
     getFavourites: (params?: LegislationQueryParams): CancellableRequestReturnType => {

@@ -10,15 +10,7 @@ const CancellableRequest = (url: string, requestParams: any): CancellableRequest
         signal: controller.signal,
         params: requestParams
     }
-    const req = axios.get(url, p).catch((e) => {
-        if (!axios.isCancel(e)) {
-            throw e;
-        } else {
-            const err = new Error();
-            err.cause = "cancelled";
-            throw e;
-        }
-    }).finally(() => {
+    const req = axios.get(url, p).finally(() => {
         fullfilled = true;
     });
             

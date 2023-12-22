@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, useRef, useReducer } from "react";
 import isEqual from "lodash.isequal";
+import axios from "axios";
 import "../App.css";
 import { ClientResponse, LegislationActionTypeEnum, LegislationListState, LegislationListAction, Reducer } from "../shared/types";
 import { SupportedQueryParams, CancellableRequestReturnType } from "../api-client/Types";
@@ -11,8 +12,6 @@ interface DataProviderParams {
     dataFn:  (params?: SupportedQueryParams) => CancellableRequestReturnType,
     tabId: string,
 }
-
-const isCancellationError = (e: any) => e instanceof Error && e.cause === "cancelled";
 
 export const useDataProvider = (params: DataProviderParams) => {
 
@@ -37,7 +36,8 @@ export const useDataProvider = (params: DataProviderParams) => {
 				error: undefined
 			}});
 		} catch(e: any) {
-            if (!isCancellationError(e)) {
+            console.log("What is e", e);
+            if (!axios.isCancel(e)) {
                 const errorMessage = e?.message ?? "Unexpected Error while getting legislations.";
                 dispatch({type: LegislationActionTypeEnum.result, payload: { error: errorMessage}});
             }

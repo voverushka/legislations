@@ -49,7 +49,7 @@ export const mockedLegislations = {
             "billSponsors": "",
             "titleEn": "Special Measures in the Public Interest (Derrybrien Wind Farm) Bill 2023",
             "titleGa": "An Bille um Bearta Speisialta ar mhaithe le Leas an Phobail (Feirm Ghaoithe Dharaidh Braoin), 2023",
-            "isFavourite": false
+            "isFavourite": true
         },
         {
             "id": "https://data.oireachtas.ie/ie/oireachtas/bill/2023/82",
@@ -277,4 +277,11 @@ export const publicLegislationsMock = {
 export const hybridLegislationsMock = {
     "count": 2,
     "items": mockedLegislations.items.filter(item => item.billType === "Hybrid")
+}
+
+
+const fav =  mockedLegislations.items.filter(item => item.isFavourite === true);
+export const favourites = {
+    count: fav.length,
+    items: fav
 }
