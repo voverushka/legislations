@@ -1,5 +1,5 @@
-export const mockeResonse = {
-    "count": 50,
+export const mockedLegislations = {
+    "count": 25,
     "items": [
         {
             "id": "https://data.oireachtas.ie/ie/oireachtas/bill/2023/97",
@@ -14,7 +14,7 @@ export const mockeResonse = {
         {
             "id": "https://data.oireachtas.ie/ie/oireachtas/bill/2023/96",
             "billNumber": "96",
-            "billType": "Public",
+            "billType": "Hybrid",
             "billStatus": "Current",
             "billSponsors": "Minister for Social Protection",
             "titleEn": "Social Welfare (Liable Relatives and Child Maintenance) Bill 2023",
@@ -74,7 +74,7 @@ export const mockeResonse = {
         {
             "id": "https://data.oireachtas.ie/ie/oireachtas/bill/2023/66",
             "billNumber": "66",
-            "billType": "Public",
+            "billType": "Hybrid",
             "billStatus": "Current",
             "billSponsors": "Minister for Finance",
             "titleEn": "Finance (State Guarantees, International Financial Institution Funds and Miscellaneous Provisions) Bill 2023",
@@ -252,4 +252,29 @@ export const mockeResonse = {
             "isFavourite": false
         }
     ]
+}
+
+export const mockedLegsislations_pageSize10_page1 = {
+    "count": 25,
+    "items": mockedLegislations.items.slice(0, 10)
+}
+
+export const mockedLegsislations_pageSize10_page2 = {
+    "count": 25,
+    "items": mockedLegislations.items.slice(10, 20)
+}
+
+export const mockedLegsislations_pageSize10_page3 = {
+    "count": 25,
+    "items": mockedLegislations.items.slice(10, 30)
+}
+
+export const publicLegislationsMock = {
+    "count": 23,
+    "items": mockedLegislations.items.filter(item => item.billType === "Public")
+}
+
+export const hybridLegislationsMock = {
+    "count": 2,
+    "items": mockedLegislations.items.filter(item => item.billType === "Hybrid")
 }
