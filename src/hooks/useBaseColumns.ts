@@ -6,7 +6,7 @@ import {
 
 const stringOperators = getGridStringOperators().filter((op => ['contains'].includes(op.value)));
 
-export const useBaseColumns = (): GridColDef[] => {
+export const useBaseColumns = (enableFilter: boolean): GridColDef[] => {
     
     const filteringOn = useAppSelector(filterOnSelector);
 
@@ -21,7 +21,7 @@ export const useBaseColumns = (): GridColDef[] => {
             {
                 field: 'billType',
                 headerName: 'Type',
-                filterable: filteringOn,
+                filterable: enableFilter === true && filteringOn,
                 filterOperators: stringOperators,
                 sortable: false,
                 width: 200,

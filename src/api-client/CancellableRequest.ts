@@ -1,7 +1,7 @@
 import axios from "axios";
-import { CancellableRequestReturnType } from "./Types";
+import { CancellableRequestReturnType, SupportedQueryParams} from "./Types";
 
-const CancellableRequest = (url: string, requestParams: any): CancellableRequestReturnType => {
+const CancellableRequest = (url: string, requestParams: SupportedQueryParams): CancellableRequestReturnType => {
     const controller = new AbortController();
 
     let fullfilled: boolean = false;

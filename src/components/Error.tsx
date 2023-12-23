@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import IconButton from '@mui/material/IconButton';
@@ -6,7 +6,7 @@ import Collapse from '@mui/material/Collapse';
 import CloseIcon from '@mui/icons-material/Close';
 
 export default function Error(props: { message: string}) {
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = useState(true);
 
   return (
     <Box sx={{ width: '100%' }}>

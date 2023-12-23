@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, RefObject , useRef} from "react";
 import { Types as servicesTypes} from "../api-client";
-import { GridFilterModel, GridFeatureMode, GridPaginationModel } from '@mui/x-data-grid';
+import { GridFilterModel, GridFeatureMode, GridPaginationModel} from '@mui/x-data-grid';
 
 const DEFAULT_PAGE_SIZE = 10;
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
@@ -12,18 +12,22 @@ const initialQuery = {
 
 const filterDebounceMs = 500;
 
-export const useQueryParams = () => {
+export const useQueryParams = (listRef: RefObject<any>) => {
+
+    const prevFilter = useRef<string | undefined>(undefined);
 
     const [ queryParams, setQueryParams] = useState<servicesTypes.SupportedQueryParams>(initialQuery);
 
     const onFilterChange = useCallback((filterModel: GridFilterModel) => {
 		const currentFilterStr = filterModel.items?.[0]?.value;
-		if (currentFilterStr !== undefined) {
+		if (currentFilterStr !== undefined && prevFilter.current !== currentFilterStr) {
 			setQueryParams({
 		        ...queryParams, 
 				bill_type: currentFilterStr, // we filter only by bill type now
                 skip: 0 // once filter changes, pagination goes back to start
 			});
+            prevFilter.current = currentFilterStr;
+            listRef.current?.setPage(0);
 		}
     }, [ setQueryParams, queryParams]);
 

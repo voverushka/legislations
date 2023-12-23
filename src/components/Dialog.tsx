@@ -5,7 +5,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import { SelectedRow } from "../shared/types";
-import Content from "./Tabs";
+import Content from "./DialogTabs";
 
 export interface RowInfoDialogProps {
   open: boolean;

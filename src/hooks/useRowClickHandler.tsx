@@ -11,7 +11,7 @@ export const useRowClickHandler = () => {
         setSelectedRow({
             billNumber, titleEn, titleGa
         });
-    }, [ setSelectedRow ]);
+    }, [ setSelectedRow ])
 
     const RowInfo = useMemo(() => {
         if (!selectedRow) {

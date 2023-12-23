@@ -26,5 +26,3 @@ export interface CancellableRequestReturnType {
 	isFullfilled: boolean;
 }
 
-export type CancellableRequestType = (params: any) => CancellableRequestReturnType;
-
