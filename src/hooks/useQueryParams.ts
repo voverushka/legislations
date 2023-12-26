@@ -29,7 +29,7 @@ export const useQueryParams = (listRef: RefObject<any>) => {
             prevFilter.current = currentFilterStr;
             listRef.current?.setPage(0);
 		}
-    }, [ setQueryParams, queryParams]);
+    }, [ setQueryParams, queryParams, listRef]);
 
     const onPaginationChage = useCallback((paginationModel: GridPaginationModel) => {
         setQueryParams({
