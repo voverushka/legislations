@@ -1,9 +1,9 @@
 import { useState, useCallback, RefObject , useRef} from "react";
 import { Types as servicesTypes} from "../api-client";
-import { GridFilterModel, GridFeatureMode, GridPaginationModel} from '@mui/x-data-grid';
+import { GridFilterModel, GridFeatureMode, GridPaginationModel } from '@mui/x-data-grid';
 import { useAppSelector } from '../appStore/hooks';
 import {
-    activeTabState
+    activeTabState, filterOnSelector
   } from '../appStore/global/globalState';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -15,11 +15,13 @@ const defaultInitialQuery = {
 }
 
 const filterDebounceMs = 500;
+const serverType = "server" as GridFeatureMode;
 
 export const useQueryParams = (listRef: RefObject<any>) => {
 
     const prevFilter = useRef<string | undefined>(undefined);
     const initialQuery = useAppSelector(activeTabState) ?? defaultInitialQuery;
+    const filteringOn = useAppSelector(filterOnSelector);
 
     const [ queryParams, setQueryParams] = useState<servicesTypes.SupportedQueryParams>(initialQuery);
 
@@ -32,9 +34,11 @@ export const useQueryParams = (listRef: RefObject<any>) => {
                 skip: 0 // once filter changes, pagination goes back to start
 			});
             prevFilter.current = currentFilterStr;
-            listRef.current?.setPage(0);
+            setTimeout(() => {
+                listRef.current?.setPage(0);
+            }, 0);
 		}
-    }, [ setQueryParams, queryParams, listRef]);
+    }, [ setQueryParams, queryParams, listRef, prevFilter]);
 
     const onPaginationChage = useCallback((paginationModel: GridPaginationModel) => {
         setQueryParams({
@@ -44,19 +48,26 @@ export const useQueryParams = (listRef: RefObject<any>) => {
 		});
     }, [ setQueryParams, queryParams ]);
 
+    const pageSize = initialQuery.limit ?? DEFAULT_PAGE_SIZE;
+    const skip = (initialQuery.skip ?? 0 ) / pageSize;
+
     return {
         dataGridMixin: {
-            filterMode: "server" as GridFeatureMode,
-            paginationMode: "server" as GridFeatureMode,
+            filterMode: serverType,
+            paginationMode: serverType,
+            filterDebounceMs,
             onFilterModelChange: onFilterChange,
             onPaginationModelChange: onPaginationChage,
             initialState:{
-                pagination: { paginationModel: { pageSize: DEFAULT_PAGE_SIZE } },
+                pagination: { paginationModel: { pageSize, page: skip } },
+                filter: filteringOn ? {
+                    filterModel: {
+                      items: [{ field: "billType", operator: 'contains', value: initialQuery.bill_type }],
+                    },
+                  }: undefined
             },
             pageSizeOptions: PAGE_SIZE_OPTIONS
         },
-        initialQuery,
-        filterDebounceMs,
         queryParams
     }
 }

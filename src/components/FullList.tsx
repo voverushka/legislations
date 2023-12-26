@@ -28,7 +28,7 @@ function FullList() {
         const changedBillIndex = (items ?? []).findIndex(bl => bl.id === billId);
         if (changedBillIndex >= 0 && items) {
             items[changedBillIndex].isFavourite = favouriteStatus;
-			onExternalListStateChange({...listState, items})
+			onExternalListStateChange({...listState, items});
         }
     }, [items, listState, onExternalListStateChange]);
 
