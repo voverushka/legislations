@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -12,7 +12,9 @@ import {
   enableFiltering,
   filterOnSelector,
   infoMessageSelector,
-  setInfo
+  activeTabSelector,
+  setActiveTab,
+  setInfo,
 } from '../appStore/global/globalState';
 
 interface TabPanelProps {
@@ -51,14 +53,15 @@ function idProps(index: number) {
 }
 
 export const AppTabsContent = () => {
-  const [tabNumber, setTabNumber] = useState(0);
   const dispatch = useAppDispatch();
   const filteringOn = useAppSelector(filterOnSelector);
   const infoMessage =  useAppSelector(infoMessageSelector);
+  const activeTabNo = useAppSelector(activeTabSelector);
 
   const handleChange = useCallback((event: React.SyntheticEvent, newValue: number) => {
-    setTabNumber(newValue);
-  }, []);
+    // record query of thie tab
+    dispatch(setActiveTab(newValue));
+  }, [ dispatch ]);
 
   useEffect(() => {
       dispatch(setInfo("Enabling filtering..."))
@@ -74,20 +77,20 @@ export const AppTabsContent = () => {
     <Stack>
       <Stack>
         <h1 data-testid="header" 
-          style={{ textAlign: "center", paddingTop: "15px"}}>Bills</h1>
+          style={{ textAlign: "center", paddingTop: "15px"}}>Legislations</h1>
         <AppInfo message={infoMessage}/>
       </Stack>
       <Box sx={{ width: '100%' }}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={tabNumber} onChange={handleChange} aria-label="bill details tabs">
+          <Tabs value={activeTabNo} onChange={handleChange} aria-label="bill details tabs">
             <Tab label="All" {...idProps(0)} />
             { filteringOn && <Tab label="Favourites" {...idProps(1)} />}
           </Tabs>
         </Box>
-        <CustomTabPanel tabNumber={tabNumber} index={0}>
+        <CustomTabPanel tabNumber={activeTabNo} index={0}>
           <FullList/>
         </CustomTabPanel>
-        { filteringOn && <CustomTabPanel tabNumber={tabNumber} index={1}>
+        { filteringOn && <CustomTabPanel tabNumber={activeTabNo} index={1}>
           <FavouritesList/>
         </CustomTabPanel>}
       </Box>

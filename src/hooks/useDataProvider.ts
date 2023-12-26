@@ -7,6 +7,10 @@ import { SupportedQueryParams, CancellableRequestReturnType } from "../api-clien
 import { initialLegislationsListState } from "../shared/Presets";
 import { useQueryParams } from ".";
 import { legislationsListReducer } from "../shared/legislationsListReducer";
+import { useAppDispatch } from '../appStore/hooks';
+import {
+  saveTabsState
+} from '../appStore/global/globalState';
 
 interface DataProviderParams {
     dataFn:  (params?: SupportedQueryParams) => CancellableRequestReturnType;
@@ -27,6 +31,7 @@ export const useDataProvider = (params: DataProviderParams): DaraProviderReturn 
 
 	const [ currentListRequest, setCurrentListRequest ] = useState<CancellableRequestReturnType | undefined>(undefined);
     const { dataGridMixin, queryParams} = useQueryParams(params.listRef);
+    const appDispatch = useAppDispatch();
  	
 	// functions
     const onExternalListStateChange = useCallback((newState: LegislationListState) => {
@@ -66,9 +71,12 @@ export const useDataProvider = (params: DataProviderParams): DaraProviderReturn 
 			if (!currentListRequest?.isFullfilled) {
 				currentListRequest?.cancel();
 			}
+            appDispatch(saveTabsState({ // save query in global state
+                settings: queryParams
+            }));
 			loadList(queryParams);
    	    }
-	}, [ queryParams, currentListRequest, loadList ]); 
+	}, [ queryParams, currentListRequest, loadList, appDispatch]); 
 
     return {
         listState,
