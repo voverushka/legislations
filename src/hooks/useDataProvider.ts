@@ -8,9 +8,7 @@ import { initialLegislationsListState } from "../shared/Presets";
 import { useQueryParams } from ".";
 import { legislationsListReducer } from "../shared/legislationsListReducer";
 import { useAppDispatch } from '../appStore/hooks';
-import {
-  saveTabsState
-} from '../appStore/global/globalState';
+import { saveTabsState } from '../appStore/slices/tabsState';
 
 interface DataProviderParams {
     dataFn:  (params?: SupportedQueryParams) => CancellableRequestReturnType;

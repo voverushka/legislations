@@ -2,7 +2,7 @@ import { GridColDef, getGridStringOperators } from '@mui/x-data-grid';
 import { useAppSelector } from '../appStore/hooks';
 import {
   filterOnSelector
-} from '../appStore/global/globalState';
+} from '../appStore/slices/globalState';
 
 const stringOperators = getGridStringOperators().filter((op => ['contains'].includes(op.value)));
 

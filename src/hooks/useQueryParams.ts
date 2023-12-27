@@ -3,8 +3,11 @@ import { Types as servicesTypes} from "../api-client";
 import { GridFilterModel, GridFeatureMode, GridPaginationModel } from '@mui/x-data-grid';
 import { useAppSelector } from '../appStore/hooks';
 import {
-    activeTabState, filterOnSelector
-  } from '../appStore/global/globalState';
+    activeTabStateSelector
+  } from '../appStore/slices/tabsState';
+import {
+    filterOnSelector
+} from '../appStore/slices/globalState';
 
 const DEFAULT_PAGE_SIZE = 10;
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
@@ -20,7 +23,7 @@ const serverType = "server" as GridFeatureMode;
 export const useQueryParams = (listRef: RefObject<any>) => {
 
     const prevFilter = useRef<string | undefined>(undefined);
-    const initialQuery = useAppSelector(activeTabState) ?? defaultInitialQuery;
+    const initialQuery = useAppSelector(activeTabStateSelector) ?? defaultInitialQuery;
     const filteringOn = useAppSelector(filterOnSelector);
 
     const [ queryParams, setQueryParams] = useState<servicesTypes.SupportedQueryParams>(initialQuery);

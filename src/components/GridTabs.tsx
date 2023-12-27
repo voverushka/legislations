@@ -12,10 +12,14 @@ import {
   enableFiltering,
   filterOnSelector,
   infoMessageSelector,
+  setInfo,
+} from '../appStore/slices/globalState';
+
+import {
   activeTabSelector,
   setActiveTab,
-  setInfo,
-} from '../appStore/global/globalState';
+} from '../appStore/slices/tabsState';
+
 
 interface TabPanelProps {
   children?: React.ReactNode;

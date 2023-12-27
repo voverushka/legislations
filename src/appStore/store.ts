@@ -1,9 +1,11 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
-import globalState from './global/globalState';
+import globalState from './slices/globalState';
+import tabs from "./slices/tabsState";
 
 export const store = configureStore({
   reducer: {
-    globalState
+    globalState,
+    tabs
   },
 });
 
