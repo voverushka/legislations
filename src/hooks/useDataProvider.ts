@@ -67,9 +67,6 @@ export const useDataProvider = (params: DataProviderParams): DaraProviderReturn 
 	useEffect(() => {
       	if (!isEqual(queryParamsRef.current, queryParams)) {
          	queryParamsRef.current = {...queryParams};
-			if (!currentListRequest?.isFullfilled) {
-				currentListRequest?.cancel();
-			}
             appDispatch(saveTabsState({ // save query in global state
                 settings: queryParams
             }));

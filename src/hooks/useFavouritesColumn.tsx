@@ -16,12 +16,17 @@ export const useFavouritesColumn = ( onFavouriteChangeCallback:  onFavouriteChan
         setInTransition([...inTransition, bill.id]);
   		LegislationsService.changeFavouriteStatus(bill.id, !bill.isFavourite).then(resp => {
             onFavouriteChangeCallback(resp.billNo, resp.isFavourite);
-            // TODO: this part needs investigation
-            const ind = inTransition.indexOf(resp.billNo);
-            inTransition.splice(ind, 1);
-            setInTransition([...inTransition]);        
+            setInTransition(inTr => {
+                const ind = inTr.indexOf(resp.billNo);
+                if (ind >= 0) {
+                    const newState = [...inTr];
+                    newState.splice(ind, 1);
+                    return newState;
+                }
+                return inTr;
+            });        
         });
-	}, [ onFavouriteChangeCallback, setInTransition, inTransition ]);
+	}, [ onFavouriteChangeCallback, setInTransition, inTransition]);
 
     const favouritesColumn = {
         field: "isFavourite", 

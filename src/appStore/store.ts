@@ -1,12 +1,8 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
-import globalState from './slices/globalState';
-import tabs from "./slices/tabsState";
+import rootReducer from './rootState';
 
 export const store = configureStore({
-  reducer: {
-    globalState,
-    tabs
-  },
+  reducer: rootReducer
 });
 
 export type AppDispatch = typeof store.dispatch;
