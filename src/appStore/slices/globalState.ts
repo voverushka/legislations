@@ -28,7 +28,7 @@ export const globalState = createSlice({
 });
 
 export const { enableFiltering, disableFiltering, setInfo} = globalState.actions;
-export const filterOnSelector = (state: RootState) => state.globalState.filteringEnabled;
-export const infoMessageSelector = (state: RootState) => state.globalState.infoMessage;
+export const filterOnSelector = (state: RootState) => state.global.filteringEnabled;
+export const infoMessageSelector = (state: RootState) => state.global.infoMessage;
 
 export default globalState.reducer;

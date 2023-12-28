@@ -1,6 +1,4 @@
-import { LegislationListState } from './types';
 
-//TODO: could be moved to styles
 export const DataGridStyles = {
     "& .MuiDataGrid-columnHeaders": {
         background: "#f8f8f8"
@@ -14,10 +12,3 @@ export const DataGridStyles = {
     "width": "90vw",
 	"height": "70vh"
 };
-
-export const initialLegislationsListState: LegislationListState = {
-	loading: false,
-	items: [],
-	error: undefined,
-	itemsCount: 0
-}

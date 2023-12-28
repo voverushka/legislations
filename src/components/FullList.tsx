@@ -1,38 +1,31 @@
-import React, { useCallback, useEffect } from "react";
+import React from "react";
 import Box from '@mui/material/Box';
 import { DataGrid , useGridApiRef} from '@mui/x-data-grid';
 import "../App.css";
 import { useFavouritesColumn } from "../hooks/useFavouritesColumn";
-import { DataGridStyles } from "../shared/Presets";
+import { DataGridStyles } from "../shared/Styles";
 import { useRowClickHandler, useDataProvider, useBaseColumns } from "../hooks";
 import { LegislationsService } from "../api-client";
 import Error from "../components/Error";
+import { useAppSelector } from '../appStore/hooks';
+import {
+	currentDataSelector
+} from '../appStore/slices/dataState';
 
 
 function FullList() {
-
 	const allListRef = useGridApiRef();
-
 	// hooks
-	const { listState, queryParamsDataGridMixin, onExternalListStateChange} = useDataProvider( {
+	const { queryParamsDataGridMixin} = useDataProvider( {
 		dataFn: LegislationsService.getLegislations,
 		listRef: allListRef
 	 });
 	
-	const { items, itemsCount, loading, error } = listState;
-
+	const { items, itemsCount, loading, error } = useAppSelector(currentDataSelector);
 	const { rowHandlerDataGridMixin, RowInfo } = useRowClickHandler();
 	const baseColumns = useBaseColumns(true);
 
-	const onFavouriteChange = useCallback((billId: string, favouriteStatus: boolean) => {
-        const changedBillIndex = (items ?? []).findIndex(bl => bl.id === billId);
-        if (changedBillIndex >= 0 && items) {
-            items[changedBillIndex].isFavourite = favouriteStatus;
-			onExternalListStateChange({...listState, items});
-        }
-    }, [items, listState, onExternalListStateChange]);
-
-	const favouritesColumn = useFavouritesColumn(onFavouriteChange);
+	const favouritesColumn = useFavouritesColumn();
 	
 	// JSX
 	return (

@@ -4,24 +4,30 @@ import IconButton from '@mui/material/IconButton';
 import StarIcon from '@mui/icons-material/Star';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
+import { useAppDispatch } from '../appStore/hooks';
+import {
+  updateFavourite
+} from '../appStore/slices/dataState';
 
 import { LegislationsService } from "../api-client";
-import { BillItem, onFavouriteChangeCallbackType } from "../shared/types";
+import { BillItem } from "../shared/types";
 
-export const useFavouritesColumn = ( onFavouriteChangeCallback:  onFavouriteChangeCallbackType): GridColDef => {
+export const useFavouritesColumn = (): GridColDef => {
 
     const [ inTransition, setInTransition ] = useState<string[]>([]);
+    const appDispatch = useAppDispatch();
 
 	const toggleFavourite = useCallback((bill: BillItem) => { 
         setInTransition([...inTransition, bill.id]);
+        const newFavourite = !bill.isFavourite;
   		LegislationsService.changeFavouriteStatus(bill.id, !bill.isFavourite).then(resp => {
-            onFavouriteChangeCallback(resp.billNo, resp.isFavourite);
+            appDispatch(updateFavourite({ itemId: bill.id,  favouriteStatus: newFavourite}));
             // TODO: this part needs investigation
             const ind = inTransition.indexOf(resp.billNo);
             inTransition.splice(ind, 1);
             setInTransition([...inTransition]);        
         });
-	}, [ onFavouriteChangeCallback, setInTransition, inTransition ]);
+	}, [ setInTransition, inTransition, appDispatch ]);
 
     const favouritesColumn = {
         field: "isFavourite", 

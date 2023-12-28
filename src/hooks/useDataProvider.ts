@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useState, useRef, useReducer, RefObject } from "react";
+import { useCallback, useEffect, useState, useRef, RefObject } from "react";
 import isEqual from "lodash.isequal";
 import axios from "axios";
 import "../App.css";
-import { ClientResponse, LegislationActionTypeEnum, LegislationListState, LegislationListAction, Reducer } from "../shared/types";
+import { ClientResponse } from "../shared/types";
 import { SupportedQueryParams, CancellableRequestReturnType } from "../api-client/Types";
-import { initialLegislationsListState } from "../shared/Presets";
 import { useQueryParams } from ".";
-import { legislationsListReducer } from "../shared/legislationsListReducer";
-import { useAppDispatch } from '../appStore/hooks';
 import { saveTabsState } from '../appStore/slices/tabsState';
+import { useAppDispatch } from '../appStore/hooks';
+import {
+  result, reload
+} from '../appStore/slices/dataState';
 
 interface DataProviderParams {
     dataFn:  (params?: SupportedQueryParams) => CancellableRequestReturnType;
@@ -16,45 +17,35 @@ interface DataProviderParams {
 }
 
 interface DaraProviderReturn {
-    listState: LegislationListState;
     queryParamsDataGridMixin: any;  // TODO: type
-    onExternalListStateChange: (newState: LegislationListState) => void;
 }
 
 export const useDataProvider = (params: DataProviderParams): DaraProviderReturn => {
 
     const queryParamsRef = useRef<SupportedQueryParams | undefined>(undefined);
-    const [ listState, dispatch] = useReducer<Reducer<LegislationListState, LegislationListAction>, LegislationListState>(
-		legislationsListReducer, initialLegislationsListState, () => initialLegislationsListState);
 
 	const [ currentListRequest, setCurrentListRequest ] = useState<CancellableRequestReturnType | undefined>(undefined);
     const { dataGridMixin, queryParams} = useQueryParams(params.listRef);
     const appDispatch = useAppDispatch();
- 	
-	// functions
-    const onExternalListStateChange = useCallback((newState: LegislationListState) => {
-        // we might choose to refresh list instead
-        dispatch({type: LegislationActionTypeEnum.general, payload: newState})
-    }, [ dispatch]);
-
+ 
 	const loadList = useCallback( async (qParams: SupportedQueryParams) => {
-		dispatch({ type: LegislationActionTypeEnum.reload })
+		appDispatch(reload());
 		try {
 			const ongoingRequest = params.dataFn(qParams);
 			setCurrentListRequest(ongoingRequest);
 			const data: ClientResponse = (await ongoingRequest.promise).data;
-			dispatch({ type: LegislationActionTypeEnum.result, payload: {
+			appDispatch(result({
 				items: data.items,
 				itemsCount: data.count,
 				error: undefined
-			}});
+			}));
 		} catch(e: any) {
             if (!axios.isCancel(e)) {
                 const errorMessage = e?.message ?? "Unexpected Error while getting legislations.";
-                dispatch({type: LegislationActionTypeEnum.result, payload: { error: errorMessage}});
+                appDispatch(result({error: errorMessage}));
             }
 		}
-	}, [ dispatch, setCurrentListRequest, params]);
+	}, [ appDispatch, setCurrentListRequest, params]);
 	
     useEffect(() => {
        return  () => {
@@ -78,9 +69,7 @@ export const useDataProvider = (params: DataProviderParams): DaraProviderReturn 
 	}, [ queryParams, currentListRequest, loadList, appDispatch]); 
 
     return {
-        listState,
-        queryParamsDataGridMixin: dataGridMixin,
-        onExternalListStateChange
+        queryParamsDataGridMixin: dataGridMixin
     }
 }
 
