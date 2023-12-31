@@ -34,7 +34,7 @@ export const useDataProvider = (params: DataProviderParams): DaraProviderReturn 
 	// functions
     const onExternalListStateChange = useCallback((newState: LegislationListState) => {
         // we might choose to refresh list instead
-        dispatch({type: LegislationActionTypeEnum.general, payload: newState})
+        dispatch({type: LegislationActionTypeEnum.external, payload: newState});
     }, [ dispatch]);
 
 	const loadList = useCallback( async (qParams: SupportedQueryParams) => {

@@ -42,7 +42,6 @@ export const useFavouritesColumn = ( onFavouriteChangeCallback:  onFavouriteChan
                     <IconButton  
                         onClick={() => {
                             if (!inTransition.includes(bill.id)) {
-                                setInTransition([...inTransition, bill.id]);
                                 toggleFavourite(bill);
                             }
                         }}>

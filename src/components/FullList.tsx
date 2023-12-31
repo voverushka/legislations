@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 import Box from '@mui/material/Box';
 import { DataGrid , useGridApiRef} from '@mui/x-data-grid';
 import "../App.css";
@@ -27,8 +27,9 @@ function FullList() {
 	const onFavouriteChange = useCallback((billId: string, favouriteStatus: boolean) => {
         const changedBillIndex = (items ?? []).findIndex(bl => bl.id === billId);
         if (changedBillIndex >= 0 && items) {
-            items[changedBillIndex].isFavourite = favouriteStatus;
-			onExternalListStateChange({...listState, items});
+			const modifiedItems = [...items];
+            modifiedItems[changedBillIndex].isFavourite = favouriteStatus;
+			onExternalListStateChange({...listState, items: modifiedItems});
         }
     }, [items, listState, onExternalListStateChange]);
 

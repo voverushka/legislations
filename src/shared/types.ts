@@ -21,7 +21,7 @@ export type onFavouriteChangeCallbackType = (billNo: string, isFavourite: boolea
 export enum LegislationActionTypeEnum {
     reload="reload",
     result="result",
-    general="general" // other modifications
+    external="external"
 }
 
 export interface LegislationListState {
